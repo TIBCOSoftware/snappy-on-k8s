@@ -1,0 +1,317 @@
+# SnappyData Version 0.6 ( latest )
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-locator-public
+  labels:
+    app: snappydata
+spec:
+  ports:
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  - port: 10334
+    targetPort: 10334
+    name: locator
+  - port: 7070
+    targetPort: 7070
+    name: pulse
+  type: LoadBalancer
+  selector:
+    app: snappydata-locator
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-server-public
+  labels:
+    app: snappydata
+spec:
+  ports:
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  - port: 10334
+    targetPort: 10334
+    name: locator
+  type: LoadBalancer
+  selector:
+    app: snappydata-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-leader-public
+  labels:
+    app: snappydata
+spec:
+  ports:
+  - port: 4040
+    targetPort: 4040
+    name: spark
+  type: LoadBalancer
+  selector:
+    app: snappydata-leader
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-locator
+  labels:
+    app: snappydata-locator
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "_status/vars"
+    prometheus.io/port: "8080"
+spec:
+  ports:
+  - port: 26257
+    targetPort: 26257
+    name: cont
+  - port: 8080
+    targetPort: 8080
+    name: http
+  - port: 10334
+    targetPort: 10334
+    name: locator
+  - port: 3768
+    targetPort: 3768
+    name: zeppelin
+  - port: 1531
+    targetPort: 1531
+    name: thrift
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  clusterIP: None
+  selector:
+    app: snappydata-locator
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-server
+  labels:
+    app: snappydata-server
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "_status/vars"
+    prometheus.io/port: "8080"
+spec:
+  ports:
+  - port: 26257
+    targetPort: 26257
+    name: cont
+  - port: 8080
+    targetPort: 8080
+    name: http
+  - port: 10334
+    targetPort: 10334
+    name: locator
+  - port: 3768
+    targetPort: 3768
+    name: zeppelin
+  - port: 1531
+    targetPort: 1531
+    name: thrift
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  clusterIP: None
+  selector:
+    app: snappydata-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-leader
+  labels:
+    app: snappydata-leader
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "_status/vars"
+    prometheus.io/port: "8080"
+spec:
+  ports:
+  - port: 26257
+    targetPort: 26257
+    name: cont
+  - port: 8080
+    targetPort: 8080
+    name: http
+  - port: 10334
+    targetPort: 10334
+    name: locator
+  - port: 3768
+    targetPort: 3768
+    name: zeppelin
+  - port: 1531
+    targetPort: 1531
+    name: thrift
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  clusterIP: None
+  selector:
+    app: snappydata-leader
+---
+apiVersion: apps/v1alpha1
+kind: PetSet
+metadata:
+  name: snappydata-locator
+spec:
+  serviceName: "snappydata-locator"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: snappydata-locator
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      containers:
+      - name: snappydata-locator
+        # Runs the current snappydata release
+        image: snappydatainc/snappydata
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "2048Mi"
+            cpu: "200m"
+        ports:
+        - containerPort: 26257
+          name: cont
+        - containerPort: 8080
+          name: http
+        - containerPort: 10334
+          name: locator
+        - containerPort: 1527
+          name: jdbc
+        livenessProbe:
+          tcpSocket:
+            port: 10334
+          initialDelaySeconds: 80
+        readinessProbe:
+          tcpSocket:
+            port: 10334
+          initialDelaySeconds: 80
+        command:
+          - "/bin/bash"
+          - "-ecx"
+          - |
+            exec /bin/bash -c "start locator"
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /opt/snappydata/sbin/snappy-locators.sh stop
+      terminationGracePeriodSeconds: 60
+---
+apiVersion: apps/v1alpha1
+kind: PetSet
+metadata:
+  name: snappydata-server
+spec:
+  serviceName: "snappydata-server"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: snappydata-server
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      containers:
+      - name: snappydata-server
+        # Runs the current snappydata release
+        image: snappydatainc/snappydata
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "4096Mi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 26257
+          name: cont
+        - containerPort: 8080
+          name: http
+        - containerPort: 10334
+          name: locator
+        - containerPort: 1527
+          name: jdbc
+        livenessProbe:
+          tcpSocket:
+            port: 1527
+          initialDelaySeconds: 160
+        readinessProbe:
+          tcpSocket:
+            port: 1527
+          initialDelaySeconds: 160
+        command:
+          - "/bin/bash"
+          - "-ecx"
+          - |
+            exec /bin/bash -c "sleep 10 && start server -locators=snappydata-locator:10334 -client-bind-address=snappydata-server"
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /opt/snappydata/sbin/snappy-servers.sh stop
+      terminationGracePeriodSeconds: 60
+---
+apiVersion: apps/v1alpha1
+kind: PetSet
+metadata:
+  name: snappydata-leader
+spec:
+  serviceName: "snappydata-leader"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: snappydata-leader
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      containers:
+      - name: snappydata-leader
+        # Runs the current snappydata release
+        image: snappydatainc/snappydata
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "2048Mi"
+            cpu: "1000m"
+        ports:
+        - containerPort: 26257
+          name: cont
+        - containerPort: 8080
+          name: http
+        - containerPort: 10334
+          name: locator
+        - containerPort: 1527
+          name: jdbc
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 4040
+          initialDelaySeconds: 160
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 4040
+          initialDelaySeconds: 160
+        command:
+          - "/bin/bash"
+          - "-ecx"
+          - |
+            exec /bin/bash -c "sleep 20 && start lead -locators=snappydata-locator:10334 -client-bind-address=snappydata-leader"
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /opt/snappydata/sbin/snappy-ledads.sh stop
+      terminationGracePeriodSeconds: 60
