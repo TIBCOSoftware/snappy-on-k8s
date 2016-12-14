@@ -202,7 +202,7 @@ spec:
           - "/bin/bash"
           - "-ecx"
           - |
-            exec /bin/bash -c "start locator"
+            exec /bin/bash -c "/opt/snappydata/sbin/snappy-locators.sh start -peer-discovery-address=snappydata-locator -client-bind-address=0.0.0.0 && tail -f /dev/null"
         lifecycle:
           preStop:
             exec:
@@ -231,7 +231,7 @@ spec:
         imagePullPolicy: IfNotPresent
         resources:
           requests:
-            memory: "4096Mi"
+            memory: "2048Mi"
             cpu: "1000m"
         ports:
         - containerPort: 26257
@@ -254,7 +254,7 @@ spec:
           - "/bin/bash"
           - "-ecx"
           - |
-            exec /bin/bash -c "sleep 10 && start server -locators=snappydata-locator:10334 -client-bind-address=snappydata-server"
+            exec /bin/bash -c "sleep 10 && /opt/snappydata/sbin/snappy-servers.sh start -locators=snappydata-locator:10334 -client-bind-address=0.0.0.0 -client-port=1527 && tail -f /dev/null"
         lifecycle:
           preStop:
             exec:
@@ -283,7 +283,7 @@ spec:
         imagePullPolicy: IfNotPresent
         resources:
           requests:
-            memory: "2048Mi"
+            memory: "4096Mi"
             cpu: "1000m"
         ports:
         - containerPort: 26257
@@ -308,7 +308,7 @@ spec:
           - "/bin/bash"
           - "-ecx"
           - |
-            exec /bin/bash -c "sleep 20 && start lead -locators=snappydata-locator:10334 -client-bind-address=snappydata-leader"
+            exec /bin/bash -c "sleep 20 && /opt/snappydata/sbin/snappy-leads.sh start -locators=locator1:10334 && tail -f /dev/null"
         lifecycle:
           preStop:
             exec:
