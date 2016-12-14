@@ -308,7 +308,7 @@ spec:
           - "/bin/bash"
           - "-ecx"
           - |
-            exec /bin/bash -c "sleep 20 && /opt/snappydata/sbin/snappy-leads.sh start -locators=locator1:10334 && tail -f /dev/null"
+            exec /bin/bash -c "sleep 20 && /opt/snappydata/sbin/snappy-leads.sh start -locators=snappydata-locator:10334 && tail -f /dev/null"
         lifecycle:
           preStop:
             exec:
