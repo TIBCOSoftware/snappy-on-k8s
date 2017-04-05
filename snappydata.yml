@@ -25,8 +25,8 @@ metadata:
     app: snappydata
 spec:
   ports:
-  - port: 1527
-    targetPort: 1527
+  - port: 1528
+    targetPort: 1528
     name: jdbc
   type: LoadBalancer
   selector:
@@ -40,8 +40,8 @@ metadata:
     app: snappydata
 spec:
   ports:
-  - port: 4040
-    targetPort: 4040
+  - port: 5050
+    targetPort: 5050
     name: spark
   type: LoadBalancer
   selector:
@@ -83,8 +83,8 @@ metadata:
     prometheus.io/port: "8080"
 spec:
   ports:
-  - port: 1527
-    targetPort: 1527
+  - port: 1528
+    targetPort: 1528
     name: jdbc
   clusterIP: None
   selector:
@@ -103,8 +103,8 @@ metadata:
     prometheus.io/port: "8080"
 spec:
   ports:
-  - port: 4040
-    targetPort: 4040
+  - port: 5050
+    targetPort: 5050
     name: jdbc
   clusterIP: None
   selector:
@@ -128,7 +128,7 @@ spec:
       - name: snappydata-locator
         # Runs the current snappydata release
         image: snappydatainc/snappydata
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         resources:
           requests:
             memory: "2048Mi"
@@ -150,7 +150,7 @@ spec:
           - "/bin/bash"
           - "-ecx"
           - |
-            exec /bin/bash -c "start locator"
+            exec /bin/bash -c "export USER_ID=$(id -u) && export GROUP_ID=$(id -g) && envsubst < /opt/snappydata/passwd > /tmp/passwd && export LD_PRELOAD=/usr/lib64/libnss_wrapper.so && export NSS_WRAPPER_PASSWD=/tmp/passwd && export NSS_WRAPPER_GROUP=/etc/group && start locator"
         lifecycle:
           preStop:
             exec:
@@ -176,7 +176,7 @@ spec:
       - name: snappydata-server
         # Runs the current snappydata release
         image: snappydatainc/snappydata
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         args:
         - sleep
         - "1000000"
@@ -199,7 +199,7 @@ spec:
           - "/bin/bash"
           - "-ecx"
           - |
-            exec /bin/bash -c "sleep 10 && start server -locators=snappydata-locator:10334 -client-port=1528 -J-Dgemfirexd.hostname-for-clients=snappydata-server-public"
+            exec /bin/bash -c "export USER_ID=$(id -u) && export GROUP_ID=$(id -g) && envsubst < /opt/snappydata/passwd > /tmp/passwd && export LD_PRELOAD=/usr/lib64/libnss_wrapper.so && export NSS_WRAPPER_PASSWD=/tmp/passwd && export NSS_WRAPPER_GROUP=/etc/group && sleep 10 && start server -locators=snappydata-locator:10334 -client-port=1528 -J-Dgemfirexd.hostname-for-clients=snappydata-server-public"
         lifecycle:
           preStop:
             exec:
@@ -225,29 +225,29 @@ spec:
       - name: snappydata-leader
         # Runs the current snappydata release
         image: snappydatainc/snappydata
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         resources:
           requests:
             memory: "4096Mi"
             cpu: "1000m"
         ports:
-        - containerPort: 4040
+        - containerPort: 5050
           name: sparkui
         livenessProbe:
           httpGet:
             path: /
-            port: 4040
+            port: 5050
           initialDelaySeconds: 160
         readinessProbe:
           httpGet:
             path: /
-            port: 4040
+            port: 5050
           initialDelaySeconds: 160
         command:
           - "/bin/bash"
           - "-ecx"
           - |
-            exec /bin/bash -c "sleep 20 && start lead -locators=snappydata-locator:10334"
+            exec /bin/bash -c "export USER_ID=$(id -u) && export GROUP_ID=$(id -g) && envsubst < /opt/snappydata/passwd > /tmp/passwd && export LD_PRELOAD=/usr/lib64/libnss_wrapper.so && export NSS_WRAPPER_PASSWD=/tmp/passwd && export NSS_WRAPPER_GROUP=/etc/group && sleep 20 && start lead -locators=snappydata-locator:10334"
         lifecycle:
           preStop:
             exec:
