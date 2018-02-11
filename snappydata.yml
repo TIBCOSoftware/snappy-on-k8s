@@ -1,4 +1,7 @@
-# SnappyData Version 0.6 ( latest )
+#TODO: this is stale but someone could see if the Prometheus annotations have value. 
+# If not, DELETE from repo. 
+#
+# SnappyData latest Version 
 apiVersion: v1
 kind: Service
 metadata:
@@ -110,8 +113,8 @@ spec:
   selector:
     app: snappydata-leader
 ---
-apiVersion: apps/v1alpha1
-kind: PetSet
+apiVersion: apps/v1
+kind: StatefulSet
 metadata:
   name: snappydata-locator
 spec:
@@ -128,10 +131,10 @@ spec:
       - name: snappydata-locator
         # Runs the current snappydata release
         image: snappydatainc/snappydata
-        imagePullPolicy: Always
+        # imagePullPolicy: Always
         resources:
           requests:
-            memory: "2048Mi"
+            memory: "500Mi"
             cpu: "200m"
         ports:
         - containerPort: 10334
@@ -158,8 +161,8 @@ spec:
               - /opt/snappydata/sbin/snappy-locators.sh stop
       terminationGracePeriodSeconds: 60
 ---
-apiVersion: apps/v1alpha1
-kind: PetSet
+apiVersion: apps/v1
+kind: StatefulSet
 metadata:
   name: snappydata-server
 spec:
@@ -176,13 +179,13 @@ spec:
       - name: snappydata-server
         # Runs the current snappydata release
         image: snappydatainc/snappydata
-        imagePullPolicy: Always
+        # imagePullPolicy: Always
         args:
         - sleep
         - "1000000"
         resources:
           requests:
-            memory: "2048Mi"
+            memory: "1024Mi"
             cpu: "1000m"
         ports:
         - containerPort: 1527
@@ -207,8 +210,8 @@ spec:
               - /opt/snappydata/sbin/snappy-servers.sh stop
       terminationGracePeriodSeconds: 60
 ---
-apiVersion: apps/v1alpha1
-kind: PetSet
+apiVersion: apps/v1
+kind: StatefulSet
 metadata:
   name: snappydata-leader
 spec:
@@ -228,7 +231,7 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            memory: "4096Mi"
+            memory: "1024Mi"
             cpu: "1000m"
         ports:
         - containerPort: 5050

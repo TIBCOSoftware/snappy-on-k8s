@@ -1,0 +1,48 @@
+# This Python script creates a lightweight HTTP server that proxies all the requests 
+# to your Snappy members. All you have to do is connect to the Pulse dashboard 
+# and all links within be functional
+# Looks for k8s object snappydata-leader and forwards to port 5050
+# TODO: There must be a better way to do this -- Jags
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: snappy-ui-proxy-controller
+spec:
+  replicas: 1
+  selector:
+    component: snappy-ui-proxy
+  template:
+    metadata:
+      labels:
+        component: snappy-ui-proxy
+    spec:
+      containers:
+        - name: snappy-ui-proxy
+          image: elsonrodriguez/spark-ui-proxy:1.0
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 100m
+          args:
+            - snappydata-leader:5050
+          livenessProbe:
+              httpGet:
+                path: /
+                port: 80
+              initialDelaySeconds: 120
+              timeoutSeconds: 5
+ 
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: snappy-ui-proxy
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    component: snappy-ui-proxy
+  type: LoadBalancer
+
