@@ -1,0 +1,52 @@
+# Default values for spark-hs.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: shirishd
+  tag: spark-init:v2.2.0-kubernetes-0.5.0
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 18080
+
+eventsdir:
+  # to use a file system path for Spark events dir, set enablePVC to true and mention the
+  # name of an already created persistent volume claim in existingClaimName.
+  # The volume will be mounted on /data in the pod
+  enablePVC: true
+  existingClaimName: ""
+
+# any environment variables that need to be made available to history server
+environment:
+  # name of the directory where spark history events are dumped is specified in
+  # SPARK_HISTORY_OPTS
+  # for file system based path this will always start with /data as PV is mounted on
+  # on /data
+  # users can set a HDFS URI instead
+  SPARK_HISTORY_OPTS: "-Dspark.history.fs.logDirectory=file:/data/spark-events"
+  #SPARK_DAEMON_MEMORY: 1g
+  #SPARK_DAEMON_JAVA_OPTS: ...
+  #SPARK_DAEMON_CLASSPATH: ...
+  #SPARK_PUBLIC_DNS: ...
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

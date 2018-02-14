@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "spark-hs.fullname" . }}
+  labels:
+    app: {{ template "spark-hs.name" . }}
+    chart: {{ template "spark-hs.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: historyport
+      protocol: TCP
+      name: historyport
+  selector:
+    app: {{ template "spark-hs.name" . }}
+    release: {{ .Release.Name }}

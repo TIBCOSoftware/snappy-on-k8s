@@ -18,14 +18,36 @@ sparkWebUI:
   port: 4040
 
 environment:
+  # Provide configuration parameters, use syntax as expected by spark-submit
   SPARK_SUBMIT_OPTIONS: >-
      --kubernetes-namespace default
      --conf spark.executor.instances=2
      --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0
      --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0
      --conf spark.driver.cores="300m"
+     --conf spark.eventLog.enabled=true
+     --conf spark.eventLog.dir=/data/spark-events
   SPARK_APP_NAME: "zeppelin-notebook-app"
-  SPARK_DEPLOY_MODE: "in-cluster-client"
+
+## Enable persistence using Persistent Volume Claims
+## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+##
+persistence:
+  enabled: true
+  ## A manually managed Persistent Volume and Claim
+  ## Requires persistence.enabled: true
+  ## If defined, PVC must be created manually before volume will be bound
+  # existingClaim:
+
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, Azure & OpenStack)
+  ##
+  # storageClass: "-"
+  accessMode: ReadWriteOnce
+  size: 8Gi
 
 ingress:
   enabled: false
