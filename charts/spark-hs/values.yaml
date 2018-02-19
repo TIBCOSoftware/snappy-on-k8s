@@ -19,15 +19,17 @@ eventsdir:
   # The volume will be mounted on /data in the pod
   enablePVC: true
   existingClaimName: ""
+  # if using file system, this should be an absolute path in the mounted volume
+  # if not using file system, mention HDFS URI
+  eventsDir: "/spark-events"
 
 # any environment variables that need to be made available to history server
 environment:
-  # name of the directory where spark history events are dumped is specified in
-  # SPARK_HISTORY_OPTS
-  # for file system based path this will always start with /data as PV is mounted on
-  # on /data
-  # users can set a HDFS URI instead
-  SPARK_HISTORY_OPTS: "-Dspark.history.fs.logDirectory=file:/data/spark-events"
+  # Note: do not configure Spark history events directory using SPARK_HISTORY_OPTS. It will be
+  # configured by this chart based on the values in "eventsdir" attributes in values.yaml
+  # However other options can be specified.
+
+  #SPARK_HISTORY_OPTS:
   #SPARK_DAEMON_MEMORY: 1g
   #SPARK_DAEMON_JAVA_OPTS: ...
   #SPARK_DAEMON_CLASSPATH: ...

@@ -6,3 +6,9 @@ data:
   {{- range $key, $val := .Values.environment }}
   {{ $key }}: {{ $val | quote }}
   {{- end}}
+  {{- range $key, $val := .Values.noteBookStorage }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end}}
+  {{- range $key, $val := .Values.sparkEventLog }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end}}

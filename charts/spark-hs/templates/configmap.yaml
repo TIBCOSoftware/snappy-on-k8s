@@ -6,3 +6,6 @@ data:
   {{- range $key, $val := .Values.environment }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
+  {{- range $key, $val := .Values.eventsdir }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}

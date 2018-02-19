@@ -31,13 +31,27 @@ spec:
               containerPort: 4040
               protocol: TCP
           command:
-            - "/bin/sh"
+            - "/bin/bash"
             - "-c"
-            - > 
+            - >
               export MASTER=k8s://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT;
-              export SPARK_SUBMIT_OPTIONS="$SPARK_SUBMIT_OPTIONS --conf spark.kubernetes.driver.pod.name=$HOSTNAME";
-              ls /data && mkdir -p /data/spark-events;
-              /zeppelin/bin/zeppelin.sh;
+              if [ "$usePVForNoteBooks" == "true" ]; then
+                export ZEPPELIN_NOTEBOOK_DIR="/data/$notebookDir"
+                mkdir -p "$ZEPPELIN_NOTEBOOK_DIR"
+                cp -nR /zeppelin/notebook/* "$ZEPPELIN_NOTEBOOK_DIR"
+              fi;
+              if [ "$enableHistoryEvents" == "true" ]; then
+                if [ "$usePVForEventsLog" == "true" ]; then
+                  SPARK_EVENTS_DIR="/data/$eventLogDir"
+                  mkdir -p "$SPARK_EVENTS_DIR"
+                else
+                  SPARK_EVENTS_DIR="$eventLogDir"
+                fi
+                SPARK_EVENT_LOG_CONFIG=" --conf spark.eventLog.enabled=true --conf spark.eventLog.dir=$SPARK_EVENTS_DIR"
+              fi;
+              export SPARK_SUBMIT_OPTIONS="$SPARK_SUBMIT_OPTIONS $SPARK_EVENT_LOG_CONFIG \
+               --conf spark.kubernetes.driver.pod.name=$HOSTNAME";
+              /zeppelin/bin/zeppelin.sh
           envFrom:
           - configMapRef:
               name: {{ .Release.Name }}-configmap

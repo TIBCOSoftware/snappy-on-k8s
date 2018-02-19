@@ -17,6 +17,8 @@ sparkWebUI:
   type: LoadBalancer
   port: 4040
 
+# Any environment variables that need to be made available to the container are defined here
+# This may include environment variables used by Spark, Zeppelin
 environment:
   # Provide configuration parameters, use syntax as expected by spark-submit
   SPARK_SUBMIT_OPTIONS: >-
@@ -25,9 +27,21 @@ environment:
      --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0
      --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0
      --conf spark.driver.cores="300m"
-     --conf spark.eventLog.enabled=true
-     --conf spark.eventLog.dir=/data/spark-events
+#     --conf spark.eventLog.enabled=true
+#     --conf spark.eventLog.dir=/data/spark-events
   SPARK_APP_NAME: "zeppelin-notebook-app"
+
+sparkEventLog:
+  enableHistoryEvents: true
+  # set this to false to use HDFS URI instead of file system path
+  usePVForEventsLog: true
+  # eventLogDir must be an absolute path on the mounted PV
+  # or a HDFS enabled system's URI
+  eventLogDir: "/spark-events"
+
+noteBookStorage:
+  usePVForNoteBooks: true
+  notebookDir: "/notebooks"
 
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/

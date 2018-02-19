@@ -31,7 +31,7 @@ Use the URL printed by the above command to access Zeppelin.
 4. Accessing Spark UI: Once Spark job is launched, Spark UI can be accessed by using following commands
 
 ```
-   export SPARK_UI_SERVICE_IP=$(kubectl get svc --namespace default spark-web-ui -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+   export SPARK_UI_SERVICE_IP=$(kubectl get svc --namespace default example-spark-web-ui -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
    echo http://$SPARK_UI_SERVICE_IP:4040
 ```
 Use the URL printed by the above command to access Spark UI.

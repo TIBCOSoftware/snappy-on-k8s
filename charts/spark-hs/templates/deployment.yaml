@@ -28,9 +28,17 @@ spec:
               containerPort: 18080
               protocol: TCP
           command:
-            - "/opt/entrypoint.sh"
-            - "/opt/spark/bin/spark-class"
-            - "org.apache.spark.deploy.history.HistoryServer"
+            - "/bin/sh"
+            - "-c"
+            - >
+              if [ "$enablePVC" == "true" ]; then
+                export SPARK_HISTORY_OPTS="$SPARK_HISTORY_OPTS \
+                -Dspark.history.fs.logDirectory=file:/data/$eventsDir";
+              fi;
+              /opt/spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer;
+#            - "/opt/entrypoint.sh"
+#            - "/opt/spark/bin/spark-class"
+#            - "org.apache.spark.deploy.history.HistoryServer"
           envFrom:
           - configMapRef:
               name: {{ .Release.Name }}-env-configmap
