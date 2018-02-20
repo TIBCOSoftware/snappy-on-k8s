@@ -1,0 +1,22 @@
+# Default values for spark-shuffle.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: shirishd
+  tag: spark-shuffle:v2.2.0-kubernetes-0.5.0
+  pullPolicy: IfNotPresent
+
+shufflePodLabels:
+  app: spark-shuffle-service
+  spark-version: 2.2.0
+
+resources:
+  limits:
+    cpu: 200m
+  #  memory: 128Mi
+  requests:
+    cpu: 200m
+  #  memory: 128Mi

@@ -29,7 +29,7 @@ A user can also set HDFS/S3 URI instead in SPARK_HISTORY_OPTS environment variab
    For example:
 
     ```
-    $ helm install --name example-history --set eventsdir.existingClaimName=example-spark-k8s-zeppelin-chart ./spark-hs/
+    $ helm install --name example-history --set historyServerConf.existingClaimName=example-spark-k8s-zeppelin-chart ./spark-hs/
     ```
 
 3.  Spark History UI URL can now be accessed as follows:

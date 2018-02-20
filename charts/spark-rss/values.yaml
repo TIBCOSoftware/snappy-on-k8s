@@ -1,0 +1,38 @@
+# Default values for spark-rss.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: shirishd
+  tag: spark-resource-staging-server:v2.2.0-kubernetes-0.5.0
+  pullPolicy: IfNotPresent
+
+service:
+  externalPort: 10000
+  internalPort: 10000
+  nodePort: 31000
+
+# properties that can be made available via configmap
+properties:
+    spark.ssl.kubernetes.resourceStagingServer.enabled: false
+# Other possible properties are listed below, primarily for setting up TLS. The paths given by KeyStore, password, and PEM files here should correspond to
+# files that are securely mounted into the resource staging server container, via e.g. secret volumes.
+#   spark.ssl.kubernetes.resourceStagingServer.keyStore=/mnt/secrets/resource-staging-server/keyStore.jks
+#   spark.ssl.kubernetes.resourceStagingServer.keyStorePassword=changeit
+#   spark.ssl.kubernetes.resourceStagingServer.keyPassword=changeit
+#   spark.ssl.kubernetes.resourceStagingServer.keyStorePasswordFile=/mnt/secrets/resource-staging-server/keystore-password.txt
+#   spark.ssl.kubernetes.resourceStagingServer.keyPasswordFile=/mnt/secrets/resource-staging-server/keystore-key-password.txt
+#   spark.ssl.kubernetes.resourceStagingServer.keyPem=/mnt/secrets/resource-staging-server/key.pem
+#   spark.ssl.kubernetes.resourceStagingServer.serverCertPem=/mnt/secrets/resource-staging-server/cert.pem
+
+
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi

@@ -1,0 +1,50 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "spark-rss.fullname" . }}
+  labels:
+    app: {{ template "spark-rss.name" . }}
+    chart: {{ template "spark-rss.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "spark-rss.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "spark-rss.name" . }}
+        release: {{ .Release.Name }}
+        resource-staging-server-instance: default
+    spec:
+      volumes:
+        - name: resource-staging-server-properties
+          configMap:
+            name: {{ .Release.Name }}-configmap
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}/{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: rssport
+              containerPort: {{ .Values.service.internalPort }}
+              protocol: TCP
+# TODO: add a proper liveness probe
+#          livenessProbe:
+#            tcpSocket:
+#              port: rssport
+#              initialDelaySeconds: 180
+#          readinessProbe:
+#            tcpSocket:
+#              port: rssport
+#              initialDelaySeconds: 20
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+            - name: resource-staging-server-properties
+              mountPath: '/etc/spark-resource-staging-server'
+          args:
+            - '/etc/spark-resource-staging-server/resource-staging-server.properties'

@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  labels:
+    {{- range $key, $val := .Values.shufflePodLabels }}
+    {{ $key }}: {{ $val }}
+    {{- end }}
+  name: {{ template "spark-shuffle.fullname" . }}
+spec:
+  template:
+    metadata:
+      labels:
+        {{- range $key, $val := .Values.shufflePodLabels }}
+        {{ $key }}: {{ $val }}
+        {{- end }}
+    spec:
+      volumes:
+        - name: temp-volume
+          hostPath:
+            path: '/tmp/spark-local' # change this path according to your cluster configuration.
+      containers:
+        - name: {{ .Chart.Name }}
+          # This is an official image that is built
+          # from the dockerfiles/shuffle directory
+          # in the spark distribution.
+          image: "{{ .Values.image.repository }}/{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - mountPath: '/tmp/spark-local'
+              name: temp-volume
+              # more volumes can be mounted here.
+              # The spark job must be configured to use these
+              # mounts using the configuration:
+              #   spark.kubernetes.shuffle.dir=<mount-1>,<mount-2>,...
+          resources:
+{{ toYaml .Values.resources | indent 12 }}

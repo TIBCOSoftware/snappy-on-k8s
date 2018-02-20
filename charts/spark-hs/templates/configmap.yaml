@@ -6,6 +6,6 @@ data:
   {{- range $key, $val := .Values.environment }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
-  {{- range $key, $val := .Values.eventsdir }}
+  {{- range $key, $val := .Values.historyServerConf }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}

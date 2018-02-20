@@ -1,0 +1,7 @@
+Created a Spark shuffle daemonset with following Pod labels:
+ {{- range $key, $val := .Values.shufflePodLabels }}
+ {{ $key }}: {{ $val }}
+ {{- end }}
+
+
+

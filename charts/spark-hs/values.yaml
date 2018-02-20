@@ -13,7 +13,7 @@ service:
   type: LoadBalancer
   port: 18080
 
-eventsdir:
+historyServerConf:
   # to use a file system path for Spark events dir, set enablePVC to true and mention the
   # name of an already created persistent volume claim in existingClaimName.
   # The volume will be mounted on /data in the pod
@@ -26,7 +26,7 @@ eventsdir:
 # any environment variables that need to be made available to history server
 environment:
   # Note: do not configure Spark history events directory using SPARK_HISTORY_OPTS. It will be
-  # configured by this chart based on the values in "eventsdir" attributes in values.yaml
+  # configured by this chart based on the values in "historyServerConf" attributes in values.yaml
   # However other options can be specified.
 
   #SPARK_HISTORY_OPTS:
