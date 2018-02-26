@@ -13,6 +13,8 @@ shufflePodLabels:
   app: spark-shuffle-service
   spark-version: 2.2.0
 
+serviceAccount: default
+
 resources:
   limits:
     cpu: 200m

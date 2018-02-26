@@ -14,6 +14,8 @@ service:
   internalPort: 10000
   nodePort: 31000
 
+serviceAccount: default
+
 # properties that can be made available via configmap
 properties:
     spark.ssl.kubernetes.resourceStagingServer.enabled: false

@@ -48,3 +48,4 @@ spec:
               mountPath: '/etc/spark-resource-staging-server'
           args:
             - '/etc/spark-resource-staging-server/resource-staging-server.properties'
+      serviceAccount: {{ .Values.image.serviceAccount }}

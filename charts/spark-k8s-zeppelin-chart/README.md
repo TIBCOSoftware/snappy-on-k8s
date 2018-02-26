@@ -10,6 +10,16 @@ This chart is still work-in-progress
 
 ## Installing the Chart
 1. Make sure that Helm is setup in your Kubernetes environment. For example by following instructions at https://docs.bitnami.com/kubernetes/get-started-kubernetes/#step-4-install-helm-and-tiller
+
+*NOTE*: In case you have RBAC enabled on K8S cluster (for example k8s version 1.8.7 on GKE), some additional config will be needed as mentioned [here](https://github.com/kubeflow/tf-operator/issues/106)
+For example on RBAC enabled cluster run following commands to create a service account for Tiller
+```
+kubectl create serviceaccount --namespace kube-system tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'      
+helm init --service-account tiller --upgrade
+```
+
 2. Get the chart and install it. 
 
 ```
@@ -18,6 +28,16 @@ This chart is still work-in-progress
   $ helm install --name example ./spark-k8s-zeppelin-chart/
 ```
 The above command will deploy the helm chart and will display instructions to access Zeppelin service and Spark UI.
+
+*NOTE*: The Spark driver pod uses a Kubernetes default service account to access the Kubernetes API 
+server to create and watch executor pods. Depending on the version and setup of Kubernetes deployed, this default 
+service account may or may not have the role that allows driver pods to create pods and services. 
+Without appropriate role the notebook may faile with NullPointerException. You may grant the default 
+service account appropriate permissions, for example:
+ ```
+ kubectl create clusterrolebinding default-cluster-rule --clusterrole=cluster-admin --serviceaccount=default:default
+ ```
+ If you want to use a different service account instead of default, you can specify it in the values.yaml file.
 
 3. Accessing Zeppelin environment: Zeppelin service URL can be found by running following commands
 

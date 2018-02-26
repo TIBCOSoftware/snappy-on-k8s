@@ -39,5 +39,8 @@ For example in values.yaml of [spark-k8s-zeppelin chart](https://github.com/Snap
      --conf spark.shuffle.service.enabled=true
      --conf spark.kubernetes.shuffle.namespace=default
      --conf spark.kubernetes.shuffle.labels="app=spark-shuffle-service,spark-version=2.2.0"
+     --conf spark.dynamicAllocation.initialExecutors=0
+     --conf spark.dynamicAllocation.minExecutors=1
+     --conf spark.dynamicAllocation.maxExecutors=5
 ```
   

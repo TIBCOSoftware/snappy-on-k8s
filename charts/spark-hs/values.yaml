@@ -13,6 +13,8 @@ service:
   type: LoadBalancer
   port: 18080
 
+serviceAccount: default
+
 historyServerConf:
   # to use a file system path for Spark events dir, set enablePVC to true and mention the
   # name of an already created persistent volume claim in existingClaimName.

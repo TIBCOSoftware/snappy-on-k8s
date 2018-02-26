@@ -50,7 +50,8 @@ spec:
                 SPARK_EVENT_LOG_CONFIG=" --conf spark.eventLog.enabled=true --conf spark.eventLog.dir=$SPARK_EVENTS_DIR"
               fi;
               export SPARK_SUBMIT_OPTIONS="$SPARK_SUBMIT_OPTIONS $SPARK_EVENT_LOG_CONFIG \
-               --conf spark.kubernetes.driver.pod.name=$HOSTNAME";
+               --conf spark.kubernetes.driver.pod.name=$HOSTNAME \
+               --conf spark.kubernetes.authenticate.driver.serviceAccountName={{ .Values.image.serviceAccount }}";
               /zeppelin/bin/zeppelin.sh
           envFrom:
           - configMapRef:
@@ -74,6 +75,7 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
+      serviceAccount: {{ .Values.image.serviceAccount }}
     {{- with .Values.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}

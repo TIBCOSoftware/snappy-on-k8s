@@ -17,6 +17,8 @@ sparkWebUI:
   type: LoadBalancer
   port: 4040
 
+serviceAccount: default
+
 # Any environment variables that need to be made available to the container are defined here
 # This may include environment variables used by Spark, Zeppelin
 environment:
@@ -26,10 +28,6 @@ environment:
      --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0
      --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0
      --conf spark.driver.cores="300m"
-#     --conf spark.dynamicAllocation.enabled=true
-#     --conf spark.shuffle.service.enabled=true
-#     --conf spark.kubernetes.shuffle.namespace=default
-#     --conf spark.kubernetes.shuffle.labels="app=spark-shuffle-service,spark-version=2.2.0"
 
 sparkEventLog:
   enableHistoryEvents: true
@@ -38,9 +36,6 @@ sparkEventLog:
   # eventLogDir must be an absolute path on the mounted PV
   # or a HDFS enabled system's URI
   eventLogDir: "/spark-events"
-
-sparkDynamicExecutorScaling:
-  enableExecutorScaling: true
 
 noteBookStorage:
   usePVForNoteBooks: true
