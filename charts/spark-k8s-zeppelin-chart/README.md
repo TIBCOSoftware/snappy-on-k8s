@@ -11,7 +11,18 @@ This chart is still work-in-progress
 ## Installing the Chart
 1. Make sure that Helm is setup in your Kubernetes environment. For example by following instructions at https://docs.bitnami.com/kubernetes/get-started-kubernetes/#step-4-install-helm-and-tiller
 
-*NOTE*: In case you have RBAC enabled on K8S cluster (for example k8s version 1.8.7 on GKE), some additional config will be needed as mentioned [here](https://github.com/kubeflow/tf-operator/issues/106)
+*NOTE*: In case you have RBAC (Role based access control) enabled on K8S cluster (for example k8s version 1.8.7 on GKE), some additional config will be needed as mentioned [here](https://github.com/kubeflow/tf-operator/issues/106)
+
+[Helm](https://github.com/kubernetes/helm/blob/master/README.md) comprises of two parts: a client and a server (Tiller) inside the kube-system namespace. Tiller runs inside your Kubernetes cluster, and manages releases (installations) of your charts. To be able to do this, Tiller needs access to the Kubernetes API. By default, RBAC policies will not allow Tiller to carry out these operations, so we need to do the following:
+
+Create a Service Account tiller for the Tiller server (in the kube-system namespace). Service Accounts are meant for intra-cluster processes running in Pods.
+
+Bind the cluster-admin ClusterRole to this Service Account. We will use ClusterRoleBindings as we want it to be applicable in all namespaces. The reason is that we want Tiller to manage resources in all namespaces.
+
+Update the existing Tiller deployment (tiller-deploy) to associate its pod with the Service Account tiller.
+
+The cluster-admin ClusterRole exists by default in your Kubernetes cluster, and allows superuser operations in all of the cluster resources. The reason for binding this role is because with Helm charts, you can have deployments consisting of a wide variety of Kubernetes resources.
+
 For example on RBAC enabled cluster run following commands to create a service account for Tiller
 ```
 kubectl create serviceaccount --namespace kube-system tiller
@@ -32,12 +43,16 @@ The above command will deploy the helm chart and will display instructions to ac
 *NOTE*: The Spark driver pod uses a Kubernetes default service account to access the Kubernetes API 
 server to create and watch executor pods. Depending on the version and setup of Kubernetes deployed, this default 
 service account may or may not have the role that allows driver pods to create pods and services. 
-Without appropriate role the notebook may faile with NullPointerException. You may grant the default 
+Without appropriate role the notebook may fail with a NullPointerException. You may have to grant the default 
 service account appropriate permissions, for example:
  ```
- kubectl create clusterrolebinding default-cluster-rule --clusterrole=cluster-admin --serviceaccount=default:default
+ kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:default --namespace=default
  ```
  If you want to use a different service account instead of default, you can specify it in the values.yaml file.
+ 
+For more information on RBAC authorization and how to configure Kubernetes service accounts for pods, please refer to
+[Using RBAC Authorization](https://kubernetes.io/docs/admin/authorization/rbac/) and
+[Configure Service Accounts for Pods](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/).
 
 3. Accessing Zeppelin environment: Zeppelin service URL can be found by running following commands
 
