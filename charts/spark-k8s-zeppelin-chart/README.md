@@ -43,12 +43,16 @@ The above command will deploy the helm chart and will display instructions to ac
 *NOTE*: The Spark driver pod uses a Kubernetes default service account to access the Kubernetes API 
 server to create and watch executor pods. Depending on the version and setup of Kubernetes deployed, this default 
 service account may or may not have the role that allows driver pods to create pods and services. 
-Without appropriate role the notebook may faile with NullPointerException. You may grant the default 
+Without appropriate role the notebook may fail with a NullPointerException. You may have to grant the default 
 service account appropriate permissions, for example:
  ```
- kubectl create clusterrolebinding default-cluster-rule --clusterrole=cluster-admin --serviceaccount=default:default
+ kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:default --namespace=default
  ```
  If you want to use a different service account instead of default, you can specify it in the values.yaml file.
+ 
+For more information on RBAC authorization and how to configure Kubernetes service accounts for pods, please refer to
+[Using RBAC Authorization](https://kubernetes.io/docs/admin/authorization/rbac/) and
+[Configure Service Accounts for Pods](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/).
 
 3. Accessing Zeppelin environment: Zeppelin service URL can be found by running following commands
 
