@@ -71,6 +71,8 @@ spec:
           volumeMounts:
           - name: data
             mountPath: /data/
+          - name: zeppelin-config-properties
+            mountPath: /zeppelin/conf
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -85,10 +87,13 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-      - name: data
-      {{- if .Values.persistence.enabled }}
-        persistentVolumeClaim:
-          claimName: {{ .Values.persistence.existingClaim | default (include "spark-k8s-zeppelin-chart.fullname" .) }}
-      {{- else }}
-        emptyDir: {}
-      {{- end -}}
+        - name: zeppelin-config-properties
+          configMap:
+            name: {{ .Release.Name }}-zeppelin-configmap
+        - name: data
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "spark-k8s-zeppelin-chart.fullname" .) }}
+        {{- else }}
+          emptyDir: {}
+        {{- end -}}

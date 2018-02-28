@@ -1,9 +1,5 @@
 1. Get the application URL by running these commands:
-{{- if .Values.ingress.enabled }}
-{{- range .Values.ingress.hosts }}
-  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ . }}{{ $.Values.ingress.path }}
-{{- end }}
-{{- else if contains "NodePort" .Values.zeppelinService.type }}
+{{ if contains "NodePort" .Values.zeppelinService.type }}
   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ template "spark-k8s-zeppelin-chart.fullname" . }})
   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
   echo http://$NODE_IP:$NODE_PORT
@@ -18,11 +14,7 @@
   kubectl port-forward $POD_NAME 8080:80
 {{- end }}
 2. Get the Spark UI URL by running these commands:
-{{- if .Values.ingress.enabled }}
-{{- range .Values.ingress.hosts }}
-  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ . }}{{ $.Values.ingress.path }}
-{{- end }}
-{{- else if contains "NodePort" .Values.sparkWebUI.type }}
+{{ if contains "NodePort" .Values.sparkWebUI.type }}
   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services spark-web-ui)
   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
   echo http://$NODE_IP:$NODE_PORT

@@ -12,3 +12,27 @@ data:
   {{- range $key, $val := .Values.sparkEventLog }}
   {{ $key }}: {{ $val | quote }}
   {{- end}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-zeppelin-configmap
+data:
+    configuration.xsl: |-
+      {{- range .Files.Lines "zeppelinConf/configuration.xsl" }}
+        {{ . }}{{ end }}
+    interpreter-list: |-
+      {{- range .Files.Lines "zeppelinConf/interpreter-list" }}
+        {{ . }}{{ end }}
+    log4j.properties: |-
+      {{- range .Files.Lines "zeppelinConf/log4j.properties" }}
+        {{ . }}{{ end }}
+    shiro.ini: |-
+      {{- range .Files.Lines "zeppelinConf/shiro.ini" }}
+        {{ . }}{{ end }}
+    zeppelin-env.sh: |-
+      {{- range .Files.Lines "zeppelinConf/zeppelin-env.sh" }}
+        {{ . }}{{ end }}
+    zeppelin-site.xml: |-
+      {{- range .Files.Lines "zeppelinConf/zeppelin-site.xml" }}
+        {{ . }}{{ end }}
