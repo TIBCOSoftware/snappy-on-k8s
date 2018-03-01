@@ -13,6 +13,7 @@ data:
   {{ $key }}: {{ $val | quote }}
   {{- end}}
 ---
+{{- if .Values.mountConfFiles }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -36,3 +37,4 @@ data:
     zeppelin-site.xml: |-
       {{- range .Files.Lines "zeppelinConf/zeppelin-site.xml" }}
         {{ . }}{{ end }}
+{{- end }}
