@@ -12,10 +12,15 @@ image:
 jupyterService:
   type: LoadBalancer
   port: 8888
+  # Set the password to something other than false to enable authentication for the notebook server.
+  # The same value will be set as the password.
+  password: 'false'
 
 sparkWebUI:
   type: LoadBalancer
   port: 4040
+
+serviceAccount: default
 
 # Enable persistence using Persistent Volume Claims
 # ref: http://kubernetes.io/docs/user-guide/persistent-volumes/

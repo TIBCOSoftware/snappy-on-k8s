@@ -7,4 +7,4 @@ home: https://github.com/apache-spark-on-k8s/spark
 icon: http://spark.apache.org/images/spark-logo-trademark.png
 maintainers:
   - name: SnappyData, Inc.
-    email:
+    email: chomp@snappydata.io

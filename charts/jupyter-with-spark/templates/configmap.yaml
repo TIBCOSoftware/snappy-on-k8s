@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-jupyter-configmap
+data:
+    jupyter_notebook_config.py: |-
+      {{- range .Files.Lines "conf/jupyter/jupyter_notebook_config.py" }}
+        {{ . }}{{ end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-spark-configmap
+data:
+    spark-defaults.conf: |-
+      {{- range .Files.Lines "conf/spark/spark-defaults.conf" }}
+        {{ . }}{{ end }}
+    fairscheduler.xml: |-
+      {{- range .Files.Lines "conf/spark/fairscheduler.xml" }}
+        {{ . }}{{ end }}
+    log4j.properties: |-
+      {{- range .Files.Lines "conf/spark/log4j.properties" }}
+        {{ . }}{{ end }}

@@ -25,7 +25,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 8888
+              containerPort: {{ .Values.jupyterService.port }}
               protocol: TCP
             - name: web-ui
               containerPort: 4040
@@ -33,7 +33,19 @@ spec:
           command:
             - "/bin/sh"
             - "-c"
-            - ". /usr/local/bin/start.sh jupyter notebook --NotebookApp.token=''"
+            - >
+              jupyter notebook --generate-config;
+              cp /tmp/jupyter_notebook_config.py /home/jovyan/.jupyter/jupyter_notebook_config.py;
+            {{- if eq .Values.jupyterService.password "false" }}
+              . /usr/local/bin/start.sh jupyter notebook --NotebookApp.token='' --NotebookApp.port={{ .Values.jupyterService.port }}
+            {{ else }}
+              echo "{ \"NotebookApp\": { \"password\": \"REPLACE_ME\" } }" > ~/.jupyter/jupyter_notebook_config.json;
+              printf "import os\nfrom notebook.auth import passwd\nprint(passwd('{{ .Values.jupyterService.password }}'))" > hash.py;
+              export HASHED=`python hash.py`;
+              rm -rf hash.py;
+              sed -i -e "s/REPLACE_ME/${HASHED}/g" ~/.jupyter/jupyter_notebook_config.json;
+              . /usr/local/bin/start.sh jupyter notebook --NotebookApp.port={{ .Values.jupyterService.port }}
+            {{- end }}
           livenessProbe:
             httpGet:
               path: /
@@ -44,10 +56,16 @@ spec:
               port: http
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+          volumeMounts:
+          - name: jupyter-config
+            mountPath: /tmp/
+          - name: spark-config
+            mountPath: /opt/spark/conf/
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
+      serviceAccount: {{ .Values.serviceAccount }}
     {{- with .Values.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
@@ -56,3 +74,10 @@ spec:
       tolerations:
 {{ toYaml . | indent 8 }}
     {{- end }}
+      volumes:
+        - name: jupyter-config
+          configMap:
+            name: {{ .Release.Name }}-jupyter-configmap
+        - name: spark-config
+          configMap:
+            name: {{ .Release.Name }}-spark-configmap
