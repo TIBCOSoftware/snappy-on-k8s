@@ -1,7 +1,8 @@
-# This Python script creates a lightweight HTTP server that proxies all the requests 
+# This deployment creates a lightweight HTTP server that proxies all the requests 
 # to your Snappy members. All you have to do is connect to the Pulse dashboard 
 # and all links within be functional
 # Looks for k8s object snappydata-leader and forwards to port 5050
+# List out all the services using kubectl and use <snappy-ui-proxy IP>:5050 to access the UI.
 # TODO: There must be a better way to do this -- Jags
 kind: ReplicationController
 apiVersion: v1
