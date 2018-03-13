@@ -59,7 +59,7 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
-      serviceAccount: {{ .Values.image.serviceAccount }}
+      serviceAccount: {{ .Values.serviceAccount }}
     {{- with .Values.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}

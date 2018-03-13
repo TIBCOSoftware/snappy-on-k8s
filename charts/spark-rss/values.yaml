@@ -10,6 +10,7 @@ image:
   pullPolicy: IfNotPresent
 
 service:
+  type: LoadBalancer
   externalPort: 10000
   internalPort: 10000
   nodePort: 31000

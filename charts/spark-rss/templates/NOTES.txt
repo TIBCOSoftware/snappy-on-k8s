@@ -1,4 +1,17 @@
-Get the application URL by running these commands:
+Get the resource staging server URI by running these commands:
+{{- if contains "NodePort" .Values.service.type }}
   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ template "spark-rss.fullname" . }})
-  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[1].address}")
   echo http://$NODE_IP:$NODE_PORT
+
+  NOTE: To access NodePort service externally, create a firewall rule that allows TCP traffic on your node port.
+  For example, if Service has a NodePort value of 31000, create a firewall rule that allows TCP traffic on port 31000.
+  Different cloud providers offer different ways of configuring firewall rules. Without the firewall you may not be
+  able to use resource staging server as spark-submit will throw error.
+
+{{- else if contains "LoadBalancer" .Values.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get svc -w {{ template "spark-rss.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "spark-rss.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo http://$SERVICE_IP:{{ .Values.service.externalPort }}
+{{- end }}
