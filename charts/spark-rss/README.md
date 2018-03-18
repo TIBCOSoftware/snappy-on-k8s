@@ -51,7 +51,7 @@ LoadBalancer to access it.
     Different cloud providers offer different ways of configuring firewall rules. Without the firewall you may not be
     able to use resource staging server as spark-submit will throw error.    
  
-####spark-submit command example
+#### spark-submit command example
 Given below is an example spark-submit command that uses resource staging server. 
 
     
