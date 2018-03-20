@@ -1,43 +1,99 @@
 # A Helm chart for Spark History Server
-This chart is still work-in-progress
+[Spark History Server](https://spark.apache.org/docs/latest/monitoring.html#viewing-after-the-fact) Web UI 
+allows users to view job execution details even after the application has finished. Spark applications should 
+be configured to log events to a directory which Spark History Server will read from to construct the 
+visualization. The directory can be a local file path, an HDFS path, or any alternative file system supported 
+by Hadoop APIs. 
 
 ## Chart Details
-This chart launches a Spark History Server on Kubernetes. To read Spark history events from a file system path, user needs to provide name of an exiting persistent volume claim.
-A user can also set HDFS/S3 URI instead in SPARK_HISTORY_OPTS environment variable (refer to values.yaml)
+This chart launches a Spark History Server on Kubernetes. History server can read events from any 
+HDFS compatible system (GCS/S3/HDFS) or a file system path mounted on the pod. A user can set GCS bucket 
+URI in 'historyServerConf.eventsDir' attribute.  Alternatively, to use a file system path a user can set 
+'historyServerConf.enablePVC' to true and specify the events directory path in 'historyServerConf.eventsDir'
+
+*Note:* This README file describes history server configuration to read history events from GCS bucket
  
-## Installing the Chart
+## Steps to configure and install chart
 
-**Instructions to use with spark-k8s-zeppelin Helm chart**
-
-1. First install the spark-k8s-zeppelin Helm chart by following the instructions given [here](https://github.com/SnappyDataInc/spark-on-k8s/tree/master/charts/spark-k8s-zeppelin-chart).
-   For example:
- 
-    ```
-    $ helm install --name example ./spark-k8s-zeppelin-chart/
-    ```
-
-2. After the installation of the spark-k8s-zeppelin chart, a persistent volume claim will be created for the standard PV. Get the name of the PVC
+1. Setup gsutil and gcloud on your local laptop and associate them with your GCP project, create a bucket, 
+create an IAM service account sparkonk8s-test, generate a json key file sparkonk8s-test.json, to grant sparkonk8s-test 
+admin permission to bucket gs://spark-history-server.
 
     ```
-    $ kubectl get pvc
-    NAME                               STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-    example-spark-k8s-zeppelin-chart   Bound     pvc-7627ffa9-11a5-11e8-8f54-42010a8001f4   8Gi        RWO            standard       3m
+    $ gsutil mb -c nearline gs://spark-history-server
+    $ export ACCOUNT_NAME=sparkonk8s-test
+    $ export GCP_PROJECT_ID=project-id
+    $ gcloud iam service-accounts create ${ACCOUNT_NAME} --display-name "${ACCOUNT_NAME}"
+    $ gcloud iam service-accounts keys create "${ACCOUNT_NAME}.json" --iam-account "${ACCOUNT_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com"
+    $ gcloud projects add-iam-policy-binding ${GCP_PROJECT_ID} --member "serviceAccount:${ACCOUNT_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" --role roles/storage.admin
+    $ gsutil iam ch serviceAccount:${ACCOUNT_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com:objectAdmin gs://spark-history-server
+    ```
+    
+2.  In order for history server to be able read from the GCS bucket, we need 
+    to mount the json key file on the history server pod. First copy the json file into 'secrets' 
+    directory for spark history server chart
+    
+    ```
+    $ cp sparkonk8s-test.json spark-hs/secrets/
+    ```
+    
+3.  Modify the 'values.yaml' file and specify the GCS bucket path created above. History server 
+    will read spark events from this path 
+    
+    ```
+    historyServerConf:
+      eventsDir: "gs://spark-history-server/"
+    ```
+        
+    Also set 'mountSecrets' field of values.yaml file to true. When 'mountSecrets' 
+    is set to true json key file will be mounted on path '/etc/secrets' of the pod.  
+    
+    ```
+    mountSecrets: true
+    ```
+    
+    Lastly set the SPARK_HISTORY_OPTS so that history server uses json key file while 
+    accessing the GCS bucket  
+    
+    ```
+    environment:
+      SPARK_HISTORY_OPTS: -Dspark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
     ```
 
-   Use the above persistent volume claim name to install History Server chart. This PVC will be used to mount a persistent volume from which History Server events will be read
-
-   For example:
-
+4.  Install the chart
     ```
-    $ helm install --name example-history --set historyServerConf.existingClaimName=example-spark-k8s-zeppelin-chart ./spark-hs/
+    helm install --name history ./spark-hs/
     ```
-
-3.  Spark History UI URL can now be accessed as follows:
+    
+    Spark History UI URL can now be accessed as follows:
     ```
     $ export SERVICE_IP=$(kubectl get svc --namespace default example-history-spark-hs -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
     $ echo http://$SERVICE_IP:18080
     ```
     Use the URL to access History UI in a browser.
+        
+## Enable spark-submit to log spark history events
+The spark-submit example below shows Spark job that logs historical events 
+to the GCS bucket created in above steps. Once job finishes, use the 
+Spark history server UI to view the job execution details.
+
+  ```
+  bin/spark-submit \
+      --master k8s://https://<k8s-master-IP> \
+      --deploy-mode cluster \
+      --name spark-pi \
+      --class org.apache.spark.examples.SparkPi \
+      --conf spark.eventLog.enabled=true \
+      --conf spark.eventLog.dir=gs://spark-history-server/ \
+      --conf spark.executor.instances=2 \
+      --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json \
+      --conf spark.kubernetes.driver.secrets.history-secrets=/etc/secrets \
+      --conf spark.kubernetes.executor.secrets.history-secrets=/etc/secrets \
+      --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0 \
+      --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0 \
+      local:///opt/spark/examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar  
+  ```
+
      
 ## Deleting the chart
 Use `helm delete` command to delete the chart

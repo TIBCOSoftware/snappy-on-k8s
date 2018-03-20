@@ -9,3 +9,13 @@ data:
   {{- range $key, $val := .Values.historyServerConf }}
   {{ $key }}: {{ $val | quote }}
   {{- end }}
+---
+{{- if .Values.mountSecrets }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-secrets
+type: Opaque
+data:
+{{ (.Files.Glob "secrets/*").AsSecrets | indent 2 }}
+{{- end }}

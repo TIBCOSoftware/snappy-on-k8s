@@ -33,12 +33,12 @@ spec:
             - >
               if [ "$enablePVC" == "true" ]; then
                 export SPARK_HISTORY_OPTS="$SPARK_HISTORY_OPTS \
-                -Dspark.history.fs.logDirectory=file:/data/$eventsDir";
+                -Dspark.history.fs.logDirectory=file:/mnt/$eventsDir";
+              else
+                export SPARK_HISTORY_OPTS="$SPARK_HISTORY_OPTS \
+                -Dspark.history.fs.logDirectory=$eventsDir";
               fi;
               /opt/spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer;
-#            - "/opt/entrypoint.sh"
-#            - "/opt/spark/bin/spark-class"
-#            - "org.apache.spark.deploy.history.HistoryServer"
           envFrom:
           - configMapRef:
               name: {{ .Release.Name }}-env-configmap
@@ -54,7 +54,11 @@ spec:
 {{ toYaml .Values.resources | indent 12 }}
           volumeMounts:
           - name: data
-            mountPath: /data/
+            mountPath: /mnt
+          {{- if .Values.mountSecrets }}
+          - name: secrets-volume
+            mountPath: /etc/secrets
+          {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -69,10 +73,15 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-      - name: data
-      {{- if .Values.historyServerConf.enablePVC }}
-        persistentVolumeClaim:
-          claimName: {{ .Values.historyServerConf.existingClaimName }}
-      {{- else }}
-        emptyDir: {}
-      {{- end -}}
+        {{- if .Values.mountSecrets }}
+        - name: secrets-volume
+          secret:
+            secretName: {{ .Release.Name }}-secrets
+        {{- end }}
+        - name: data
+        {{- if .Values.historyServerConf.enablePVC }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.historyServerConf.existingClaimName }}
+        {{- else }}
+          emptyDir: {}
+        {{- end -}}
