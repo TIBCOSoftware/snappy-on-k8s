@@ -41,17 +41,24 @@ spec:
                 cp -nR /zeppelin/notebook/* "$ZEPPELIN_NOTEBOOK_DIR"
               fi;
               if [ "$enableHistoryEvents" == "true" ]; then
-                if [ "$usePVForEventsLog" == "true" ]; then
-                  SPARK_EVENTS_DIR="/data/$eventLogDir"
-                  mkdir -p "$SPARK_EVENTS_DIR"
-                else
-                  SPARK_EVENTS_DIR="$eventLogDir"
-                fi
+                # currently not using PV for history events so commented out
+                #if [ "$usePVForEventsLog" == "true" ]; then
+                #  SPARK_EVENTS_DIR="/data/$eventLogDir"
+                #  mkdir -p "$SPARK_EVENTS_DIR"
+                #else
+                #  SPARK_EVENTS_DIR="$eventLogDir"
+                #fi
+                SPARK_EVENTS_DIR="$eventLogDir"
                 SPARK_EVENT_LOG_CONFIG=" --conf spark.eventLog.enabled=true --conf spark.eventLog.dir=$SPARK_EVENTS_DIR"
               fi;
-              export SPARK_SUBMIT_OPTIONS="$SPARK_SUBMIT_OPTIONS $SPARK_EVENT_LOG_CONFIG \
+              {{- if .Values.mountSecrets }}
+              SPARK_SECRETS_CONFIG=" --conf spark.kubernetes.driver.secrets.{{ .Release.Name }}-secrets=/etc/secrets \
+                --conf spark.kubernetes.executor.secrets.{{ .Release.Name }}-secrets=/etc/secrets"
+              {{- end }}
+              export SPARK_SUBMIT_OPTIONS="$SPARK_SUBMIT_OPTIONS $SPARK_EVENT_LOG_CONFIG $SPARK_SECRETS_CONFIG \
                --conf spark.kubernetes.driver.pod.name=$HOSTNAME \
-               --conf spark.kubernetes.authenticate.driver.serviceAccountName={{ .Values.image.serviceAccount }}";
+               --conf spark.kubernetes.authenticate.driver.serviceAccountName={{ .Values.serviceAccount }}";
+              echo "SPARK_SUBMIT_OPTIONS are: $SPARK_SUBMIT_OPTIONS";
               /zeppelin/bin/zeppelin.sh
           envFrom:
           - configMapRef:
@@ -75,6 +82,10 @@ spec:
           - name: zeppelin-config-properties
             mountPath: /zeppelin/conf
           {{- end }}
+          {{- if .Values.mountSecrets }}
+          - name: secrets-volume
+            mountPath: /etc/secrets
+          {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -89,6 +100,11 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
+        {{- if .Values.mountSecrets }}
+        - name: secrets-volume
+          secret:
+            secretName: {{ .Release.Name }}-secrets
+        {{- end }}
         {{- if .Values.mountConfFiles }}
         - name: zeppelin-config-properties
           configMap:

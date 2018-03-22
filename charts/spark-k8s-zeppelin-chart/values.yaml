@@ -28,17 +28,21 @@ environment:
      --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0
      --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0
      --conf spark.executor.instances=2
+#     --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
 
 sparkEventLog:
-  enableHistoryEvents: true
-  # set this to false to use HDFS URI instead of file system path
-  usePVForEventsLog: true
-  # eventLogDir must be an absolute path on the mounted PV
-  # or a HDFS enabled system's URI
-  eventLogDir: "/spark-events"
+  enableHistoryEvents: false
+  # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
+  eventLogDir: "gs://spark_history_server_testing/"
+
+# if mountSecrets is set to true files in 'secrets' directory will be mounted
+# on path '/etc/secrets' as secrets
+mountSecrets: false
 
 noteBookStorage:
   usePVForNoteBooks: true
+  # If using PV for notebook storage, 'notebookDir' will be an
+  # absolute path in the mounted persistent volume
   notebookDir: "/notebooks"
 
 # whether to mount zeppelin conf files given in zeppelinConf directory
@@ -51,9 +55,8 @@ mountConfFiles: false
 ##
 persistence:
   enabled: true
-  ## A manually managed Persistent Volume and Claim
-  ## Requires persistence.enabled: true
-  ## If defined, PVC must be created manually before volume will be bound
+  ## If 'existingClaim' is defined, PVC must be created manually before
+  ## volume will be bound
   # existingClaim:
 
   ## If defined, storageClassName: <storageClass>

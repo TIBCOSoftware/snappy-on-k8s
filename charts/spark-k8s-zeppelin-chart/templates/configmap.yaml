@@ -38,3 +38,13 @@ data:
       {{- range .Files.Lines "zeppelinConf/zeppelin-site.xml" }}
         {{ . }}{{ end }}
 {{- end }}
+---
+{{- if .Values.mountSecrets }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-secrets
+type: Opaque
+data:
+{{ (.Files.Glob "secrets/*").AsSecrets | indent 2 }}
+{{- end }}
