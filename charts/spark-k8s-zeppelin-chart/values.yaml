@@ -45,11 +45,6 @@ noteBookStorage:
   # absolute path in the mounted persistent volume
   notebookDir: "/notebooks"
 
-# whether to mount zeppelin conf files given in zeppelinConf directory
-# of helm chart
-# currently set to false as this fails if the conf file is empty
-mountConfFiles: false
-
 ## Enable persistence using Persistent Volume Claims
 ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
 ##

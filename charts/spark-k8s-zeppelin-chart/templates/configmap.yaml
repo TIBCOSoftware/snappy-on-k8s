@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-configmap
+  name: {{ .Release.Name }}-env-configmap
 data:
   {{- range $key, $val := .Values.environment }}
   {{ $key }}: {{ $val | quote }}
@@ -13,31 +13,19 @@ data:
   {{ $key }}: {{ $val | quote }}
   {{- end}}
 ---
-{{- if .Values.mountConfFiles }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-zeppelin-configmap
 data:
-    configuration.xsl: |-
-      {{- range .Files.Lines "zeppelinConf/configuration.xsl" }}
-        {{ . }}{{ end }}
-    interpreter-list: |-
-      {{- range .Files.Lines "zeppelinConf/interpreter-list" }}
-        {{ . }}{{ end }}
-    log4j.properties: |-
-      {{- range .Files.Lines "zeppelinConf/log4j.properties" }}
-        {{ . }}{{ end }}
-    shiro.ini: |-
-      {{- range .Files.Lines "zeppelinConf/shiro.ini" }}
-        {{ . }}{{ end }}
-    zeppelin-env.sh: |-
-      {{- range .Files.Lines "zeppelinConf/zeppelin-env.sh" }}
-        {{ . }}{{ end }}
-    zeppelin-site.xml: |-
-      {{- range .Files.Lines "zeppelinConf/zeppelin-site.xml" }}
-        {{ . }}{{ end }}
-{{- end }}
+{{ (.Files.Glob "zeppelinConf/*").AsConfig | indent 2 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-spark-configmap
+data:
+{{ (.Files.Glob "sparkConf/*").AsConfig | indent 2 }}
 ---
 {{- if .Values.mountSecrets }}
 apiVersion: v1

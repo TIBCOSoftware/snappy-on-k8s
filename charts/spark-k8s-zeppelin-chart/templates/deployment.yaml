@@ -62,7 +62,7 @@ spec:
               /zeppelin/bin/zeppelin.sh
           envFrom:
           - configMapRef:
-              name: {{ .Release.Name }}-configmap
+              name: {{ .Release.Name }}-env-configmap
           livenessProbe:
             httpGet:
               path: /
@@ -78,10 +78,10 @@ spec:
           volumeMounts:
           - name: data
             mountPath: /data/
-          {{- if .Values.mountConfFiles }}
           - name: zeppelin-config-properties
             mountPath: /zeppelin/conf
-          {{- end }}
+          - name: spark-config-properties
+            mountPath: /opt/spark/conf
           {{- if .Values.mountSecrets }}
           - name: secrets-volume
             mountPath: /etc/secrets
@@ -105,11 +105,12 @@ spec:
           secret:
             secretName: {{ .Release.Name }}-secrets
         {{- end }}
-        {{- if .Values.mountConfFiles }}
+        - name: spark-config-properties
+          configMap:
+            name: {{ .Release.Name }}-spark-configmap
         - name: zeppelin-config-properties
           configMap:
             name: {{ .Release.Name }}-zeppelin-configmap
-        {{- end }}
         - name: data
         {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
