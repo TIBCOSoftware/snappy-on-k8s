@@ -6,15 +6,15 @@ replicaCount: 1
 
 image:
   repository: snappydatainc/spark-k8s-jupyter-notebook
-  tag: 5.2.1-2.2.0
+  tag: 5.2.1-2.2.0-0.1
   pullPolicy: IfNotPresent
 
 jupyterService:
   type: LoadBalancer
   port: 8888
-  # Set the password to something other than false to enable authentication for the notebook server.
-  # The same value will be set as the password.
-  password: 'false'
+  # Set your password to access the notebook server. A default ('abc123') has been set for you.
+  # Setting the password to empty string will disable the authentication (not recommended).
+  password: 'abc123'
 
 sparkWebUI:
   type: LoadBalancer

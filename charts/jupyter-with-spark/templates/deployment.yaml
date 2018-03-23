@@ -35,9 +35,16 @@ spec:
             - "-c"
             - >
               jupyter notebook --generate-config;
-              size=$(wc -c < /tmp/conf/jupyter/jupyter_notebook_config.py)
+              size=$(wc -c < /tmp/conf/jupyter/jupyter_notebook_config.py);
               if [ $size -gt 0 ]; then cp /tmp/conf/jupyter/jupyter_notebook_config.py /home/jovyan/.jupyter/jupyter_notebook_config.py; fi;
-            {{- if eq .Values.jupyterService.password "false" }}
+              cp /tmp/conf/spark/* /opt/spark/conf/;
+              mkdir -p /home/jovyan/notebooks;
+              prefix=`date +%s%N | cut -b1-13`;
+              echo "" >> /opt/spark/conf/spark-defaults.conf;
+              echo "spark.master                                   k8s://https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT" >> /opt/spark/conf/spark-defaults.conf;
+              echo "spark.kubernetes.driver.pod.name               $HOSTNAME" >> /opt/spark/conf/spark-defaults.conf;
+              echo "spark.kubernetes.executor.podNamePrefix        spark-$prefix" >> /opt/spark/conf/spark-defaults.conf;
+            {{- if eq .Values.jupyterService.password "" }}
               . /usr/local/bin/start.sh jupyter notebook --NotebookApp.token='' --NotebookApp.port={{ .Values.jupyterService.port }}
             {{ else }}
               echo "{ \"NotebookApp\": { \"password\": \"REPLACE_ME\" } }" > ~/.jupyter/jupyter_notebook_config.json;
@@ -61,8 +68,7 @@ spec:
           - name: jupyter-config
             mountPath: /tmp/conf/jupyter/
           - name: spark-config
-            mountPath: /opt/spark/conf/
-#            mountPath: /tmp/conf/spark/ # TODO Update image. /opt/spark is currently not writable by non-root user jovyan.
+            mountPath: /tmp/conf/spark/
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
