@@ -1,15 +1,14 @@
 # A Helm chart for Spark History Server
 [Spark History Server](https://spark.apache.org/docs/latest/monitoring.html#viewing-after-the-fact) Web UI 
-allows users to view job execution details even after the application has finished. Spark applications should 
-be configured to log events to a directory which Spark History Server will read from to construct the 
-visualization. The directory can be a local file path, an HDFS path, or any alternative file system supported 
-by Hadoop APIs. 
+allows users to view job execution details even after the application has finished execution. To use History Server, 
+Spark applications should be configured to log events to a directory from which Spark History Server will read events
+to construct the job execution visualization. The events directory can be a local file path, an HDFS path, or any alternative 
+file system supported by Hadoop APIs. 
 
 ## Chart Details
-This chart launches a Spark History Server on Kubernetes. History server can read events from any 
+This chart launches Spark History Server on Kubernetes. History server can read events from any 
 HDFS compatible system (GCS/S3/HDFS) or a file system path mounted on the pod. A user can set GCS bucket 
-URI in 'historyServerConf.eventsDir' attribute.  Alternatively, to use a file system path a user can set 
-'historyServerConf.enablePVC' to true and specify the events directory path in 'historyServerConf.eventsDir'
+URI in 'historyServerConf.eventsDir' attribute. 
 
 *Note:* This README file describes history server configuration to read history events from GCS bucket
  

@@ -74,4 +74,47 @@ NOTE: Below command will work ONLY after a Spark job is launched. Run a Spark No
 Use the URL printed by the above command to access Spark UI.
 
 ## Configuration
-TBD
+### Enabling Spark event logging for history server
+By default, Zeppelin chart does not enable Spark event logging. Users can enable Spark event logging to view job 
+details in the history server UI by configuring the chart by following the steps given below. Users can log Spark events to any HDFS compatible system (GCS/S3/HDFS etc.). 
+Here we list steps to configure Spark event logging on Google Cloud Storage
+
+1. Deploy the Spark History Server chart by following the steps given [here](https://github.com/SnappyDataInc/spark-on-k8s/tree/master/charts/spark-hs) 
+   Make sure that you have created a GCS bucket and generated a json key file as given in step 1. of [history server configuration](https://github.com/SnappyDataInc/spark-on-k8s/tree/master/charts/spark-hs#steps-to-configure-and-install-chart)
+
+2. In the values.yaml file of the Zeppelin chart, set 'sparkEventLog.enableHistoryEvents' to true and 'sparkEventLog.eventLogDir' to the URI of the GCS bucket (created in step 1 above).   
+	```
+	sparkEventLog:
+	  enableHistoryEvents: true
+	  eventLogDir: "gs://spark-history-server/"
+	```
+3. To allow Spark Driver to write to GCS bucket, we need to mount the json key file on the driver pod. First copy the json file into 'secrets' directory of spark-k8s-zeppelin chart
+	```
+	$ cp sparkonk8s-test.json spark-k8s-zeppelin-chart/secrets/
+	```
+    Also set 'mountSecrets' field of values.yaml file to true. When 'mountSecrets' 
+    is set to true json key file will be mounted on path '/etc/secrets' of the pod.  
+    
+	```
+	mountSecrets: true
+	```
+4.  Lastly in the values.yaml file, modify the attribute 'environment.SPARK_SUBMIT_OPTIONS' so that spark-submit uses json key file while 
+    accessing the GCS bucket. In the example below, configuration option 'spark.hadoop.google.cloud.auth.service.account.json.keyfile' is 
+    set to the mounted json key file  
+    
+	```
+	environment:
+	# Provide configuration parameters, use syntax as expected by spark-submit
+	SPARK_SUBMIT_OPTIONS: >-
+	  --kubernetes-namespace default
+	  --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0
+	  --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0
+	  --conf spark.executor.instances=2
+	  --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
+	```
+After following the steps as given above, Spark will log job events to the GCS bucket 'gs://spark-history-server/'. You may use the
+[Spark History Server UI](https://github.com/SnappyDataInc/spark-on-k8s/tree/master/charts/spark-hs) to view details of jobs.
+
+
+
+
