@@ -35,17 +35,17 @@ spec:
             - "-c"
             - >
               jupyter notebook --generate-config;
-              size=$(wc -c < /tmp/conf/jupyter/jupyter_notebook_config.py)
+              size=$(wc -c < /tmp/conf/jupyter/jupyter_notebook_config.py);
               if [ $size -gt 0 ]; then cp /tmp/conf/jupyter/jupyter_notebook_config.py /home/jovyan/.jupyter/jupyter_notebook_config.py; fi;
             {{- if eq .Values.jupyterService.password "false" }}
-              . /usr/local/bin/start.sh jupyter notebook --NotebookApp.token='' --NotebookApp.port={{ .Values.jupyterService.port }}
+              . /usr/local/bin/start.sh jupyter notebook --NotebookApp.token='' --NotebookApp.port={{ .Values.jupyterService.port }};
             {{ else }}
               echo "{ \"NotebookApp\": { \"password\": \"REPLACE_ME\" } }" > ~/.jupyter/jupyter_notebook_config.json;
               printf "import os\nfrom notebook.auth import passwd\nprint(passwd('{{ .Values.jupyterService.password }}'))" > hash.py;
               export HASHED=`python hash.py`;
               rm -rf hash.py;
               sed -i -e "s/REPLACE_ME/${HASHED}/g" ~/.jupyter/jupyter_notebook_config.json;
-              . /usr/local/bin/start.sh jupyter notebook --NotebookApp.port={{ .Values.jupyterService.port }}
+              . /usr/local/bin/start.sh jupyter notebook --NotebookApp.port={{ .Values.jupyterService.port }};
             {{- end }}
           livenessProbe:
             httpGet:
