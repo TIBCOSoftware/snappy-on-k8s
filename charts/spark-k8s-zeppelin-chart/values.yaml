@@ -77,3 +77,7 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+#internal attribute, do not change
+global:
+  umbrellaChart: false

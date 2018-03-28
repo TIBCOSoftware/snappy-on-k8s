@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-env-configmap
+  name: {{ .Release.Name }}-hsenv-configmap
 data:
   {{- range $key, $val := .Values.environment }}
   {{ $key }}: {{ $val | quote }}
@@ -10,11 +10,11 @@ data:
   {{ $key }}: {{ $val | quote }}
   {{- end }}
 ---
-{{- if .Values.mountSecrets }}
+{{- if and .Values.mountSecrets (not .Values.global.umbrellaChart) }}
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Release.Name }}-secrets
+  name: {{ .Release.Name }}-hs-secrets
 type: Opaque
 data:
 {{ (.Files.Glob "secrets/*").AsSecrets | indent 2 }}

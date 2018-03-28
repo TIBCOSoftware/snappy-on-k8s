@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-env-configmap
+  name: {{ .Release.Name }}-zpenv-configmap
 data:
   {{- range $key, $val := .Values.environment }}
   {{ $key }}: {{ $val | quote }}
@@ -13,25 +13,29 @@ data:
   {{ $key }}: {{ $val | quote }}
   {{- end}}
 ---
+{{- if (not .Values.global.umbrellaChart) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-zeppelin-configmap
 data:
 {{ (.Files.Glob "zeppelinConf/*").AsConfig | indent 2 }}
+{{- end }}
 ---
+{{- if (not .Values.global.umbrellaChart) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-spark-configmap
+  name: {{ .Release.Name }}-zpspark-configmap
 data:
 {{ (.Files.Glob "sparkConf/*").AsConfig | indent 2 }}
+{{- end }}
 ---
-{{- if .Values.mountSecrets }}
+{{- if and .Values.mountSecrets (not .Values.global.umbrellaChart) }}
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Release.Name }}-secrets
+  name: {{ .Release.Name }}-zp-secrets
 type: Opaque
 data:
 {{ (.Files.Glob "secrets/*").AsSecrets | indent 2 }}

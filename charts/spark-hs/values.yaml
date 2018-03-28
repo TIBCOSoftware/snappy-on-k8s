@@ -29,7 +29,7 @@ historyServerConf:
 
 # copy your key file in 'secrets' directory and set mountSecrets to true
 # key file will be mounted on '/etc/secrets'
-mountSecrets: false
+mountSecrets: true
 
 # any environment variables that need to be made available to history server
 environment:
@@ -37,7 +37,7 @@ environment:
   # configured by this chart based on the values in "historyServerConf" attributes in values.yaml
   # However other options can be specified.
 
-  #SPARK_HISTORY_OPTS: -Dspark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
+  SPARK_HISTORY_OPTS: -Dspark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
   #SPARK_DAEMON_MEMORY: 1g
   #SPARK_DAEMON_JAVA_OPTS: ...
   #SPARK_DAEMON_CLASSPATH: ...
@@ -60,3 +60,7 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+#internal attribute, do not change
+global:
+  umbrellaChart: false

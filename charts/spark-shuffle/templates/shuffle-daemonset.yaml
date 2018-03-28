@@ -34,4 +34,4 @@ spec:
               #   spark.kubernetes.shuffle.dir=<mount-1>,<mount-2>,...
           resources:
 {{ toYaml .Values.resources | indent 12 }}
-      serviceAccount: {{ .Values.serviceAccount }}
+      serviceAccount: {{ .Values.global.serviceAccount | default .Values.serviceAccount }}

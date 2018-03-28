@@ -22,3 +22,7 @@ resources:
   requests:
     cpu: 200m
   #  memory: 128Mi
+
+#internal attribute, do not change
+global:
+  umbrellaChart: false

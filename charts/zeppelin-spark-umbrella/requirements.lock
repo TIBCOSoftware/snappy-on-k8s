@@ -1,0 +1,15 @@
+dependencies:
+- name: spark-hs
+  repository: file://../spark-hs
+  version: 0.1.0
+- name: spark-k8s-zeppelin-chart
+  repository: file://../spark-k8s-zeppelin-chart
+  version: 0.1.0
+- name: spark-rss
+  repository: file://../spark-rss
+  version: 0.1.0
+- name: spark-shuffle
+  repository: file://../spark-shuffle
+  version: 0.1.0
+digest: sha256:15374f0a0914282a09def5c10e25a2c283113173464a62fb8c43e2b6569276d3
+generated: 2018-03-28T14:12:17.852141816+05:30

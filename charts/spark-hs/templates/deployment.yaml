@@ -41,7 +41,7 @@ spec:
               /opt/spark/bin/spark-class org.apache.spark.deploy.history.HistoryServer;
           envFrom:
           - configMapRef:
-              name: {{ .Release.Name }}-env-configmap
+              name: {{ .Release.Name }}-hsenv-configmap
           livenessProbe:
             httpGet:
               path: /
@@ -55,7 +55,7 @@ spec:
           volumeMounts:
           - name: data
             mountPath: /mnt
-          {{- if .Values.mountSecrets }}
+          {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
           - name: secrets-volume
             mountPath: /etc/secrets
           {{- end }}
@@ -63,7 +63,7 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
-      serviceAccount: {{ .Values.serviceAccount }}
+      serviceAccount: {{ .Values.global.serviceAccount | default .Values.serviceAccount }}
     {{- with .Values.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
@@ -73,10 +73,10 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-        {{- if .Values.mountSecrets }}
+        {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
         - name: secrets-volume
           secret:
-            secretName: {{ .Release.Name }}-secrets
+            secretName: {{ .Release.Name }}-hs-secrets
         {{- end }}
         - name: data
         {{- if .Values.historyServerConf.enablePVC }}

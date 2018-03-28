@@ -51,18 +51,18 @@ spec:
                 SPARK_EVENTS_DIR="$eventLogDir"
                 SPARK_EVENT_LOG_CONFIG=" --conf spark.eventLog.enabled=true --conf spark.eventLog.dir=$SPARK_EVENTS_DIR"
               fi;
-              {{- if .Values.mountSecrets }}
-              SPARK_SECRETS_CONFIG=" --conf spark.kubernetes.driver.secrets.{{ .Release.Name }}-secrets=/etc/secrets \
-                --conf spark.kubernetes.executor.secrets.{{ .Release.Name }}-secrets=/etc/secrets"
+              {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
+              SPARK_SECRETS_CONFIG=" --conf spark.kubernetes.driver.secrets.{{ .Release.Name }}-zp-secrets=/etc/secrets \
+                --conf spark.kubernetes.executor.secrets.{{ .Release.Name }}-zp-secrets=/etc/secrets"
               {{- end }}
               export SPARK_SUBMIT_OPTIONS="$SPARK_SUBMIT_OPTIONS $SPARK_EVENT_LOG_CONFIG $SPARK_SECRETS_CONFIG \
                --conf spark.kubernetes.driver.pod.name=$HOSTNAME \
-               --conf spark.kubernetes.authenticate.driver.serviceAccountName={{ .Values.serviceAccount }}";
+               --conf spark.kubernetes.authenticate.driver.serviceAccountName={{ .Values.global.serviceAccount | default .Values.serviceAccount }}";
               echo "SPARK_SUBMIT_OPTIONS are: $SPARK_SUBMIT_OPTIONS";
               /zeppelin/bin/zeppelin.sh
           envFrom:
           - configMapRef:
-              name: {{ .Release.Name }}-env-configmap
+              name: {{ .Release.Name }}-zpenv-configmap
           livenessProbe:
             httpGet:
               path: /
@@ -82,7 +82,7 @@ spec:
             mountPath: /zeppelin/conf
           - name: spark-config-properties
             mountPath: /opt/spark/conf
-          {{- if .Values.mountSecrets }}
+          {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
           - name: secrets-volume
             mountPath: /etc/secrets
           {{- end }}
@@ -90,7 +90,7 @@ spec:
       nodeSelector:
 {{ toYaml . | indent 8 }}
     {{- end }}
-      serviceAccount: {{ .Values.serviceAccount }}
+      serviceAccount: {{ .Values.global.serviceAccount | default .Values.serviceAccount }}
     {{- with .Values.affinity }}
       affinity:
 {{ toYaml . | indent 8 }}
@@ -100,14 +100,14 @@ spec:
 {{ toYaml . | indent 8 }}
     {{- end }}
       volumes:
-        {{- if .Values.mountSecrets }}
+        {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
         - name: secrets-volume
           secret:
-            secretName: {{ .Release.Name }}-secrets
+            secretName: {{ .Release.Name }}-zp-secrets
         {{- end }}
         - name: spark-config-properties
           configMap:
-            name: {{ .Release.Name }}-spark-configmap
+            name: {{ .Release.Name }}-zpspark-configmap
         - name: zeppelin-config-properties
           configMap:
             name: {{ .Release.Name }}-zeppelin-configmap

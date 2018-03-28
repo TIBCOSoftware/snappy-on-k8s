@@ -1,0 +1,100 @@
+#parent values.yaml
+
+# global attributes for umbrella chart
+global:
+  mountSecrets: true
+  mountSparkConf: true
+  mountZeppelinConf: true
+  serviceAccount: default
+  # internal attribute. Do not change
+  umbrellaChart: true
+
+# configuration for Spark History Server
+history-server:
+  historyServerConf:
+    # URI of the GCS bucket
+    eventsDir: "gs://spark_history_server_testing/"
+
+    # sparkonk8s-test.json is name of the keyfile to access GCS bucket got history log.
+    # Change it to reflect name of your key file. Key file will always be in path /etc/secret
+  environment:
+    SPARK_HISTORY_OPTS: -Dspark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
+
+  resources: {}
+
+# configuration for Zeppelin environment
+zeppelin:
+  # Any environment variables that need to be made available to the container are defined here
+  # This may include environment variables used by Spark, Zeppelin
+
+  # sparkonk8s-test.json is name of the keyfile to access GCS bucket got history log.
+  # Change it to reflect name of your key file. Key file will always be in path /etc/secrets
+  environment:
+    SPARK_SUBMIT_OPTIONS: >-
+       --kubernetes-namespace default
+       --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0
+       --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0
+       --conf spark.executor.instances=2
+       --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
+  sparkEventLog:
+    enableHistoryEvents: true
+    # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
+    eventLogDir: "gs://spark_history_server_testing/"
+  noteBookStorage:
+    usePVForNoteBooks: true
+    # If using PV for notebook storage, 'notebookDir' will be an
+    # absolute path in the mounted persistent volume
+    notebookDir: "/notebooks"
+
+  ## Enable persistence using Persistent Volume Claims
+  ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+  ##
+  persistence:
+    enabled: true
+    ## If 'existingClaim' is defined, PVC must be created manually before
+    ## volume will be bound
+    # existingClaim:
+
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, Azure & OpenStack)
+    ##
+    # storageClass: "-"
+    accessMode: ReadWriteOnce
+    size: 8Gi
+
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    # requests:
+    #  cpu: 100m
+    #  memory: 128Mi
+
+# configuration for Spark Resource Staging Server
+rss:
+  # properties that can be made available via configmap
+  properties:
+      spark.ssl.kubernetes.resourceStagingServer.enabled: false
+resources:
+  limits:
+    cpu: 100m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+# configuration for Spark Shuffle Service
+shuffle-service:
+  shufflePodLabels:
+    app: spark-shuffle-service
+    spark-version: 2.2.0
+  resources:
+    limits:
+      cpu: 200m
+    #  memory: 128Mi
+    requests:
+      cpu: 200m
+    #  memory: 128Mi
