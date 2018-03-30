@@ -252,7 +252,7 @@ zeppelin:
 
 #### Launch Spark, Zeppelin and History server cluster
 
-Follow the Helm install command to launch everything as [described above](#Launch-Spark-and-Notebook-servers). For Spark
+Follow the Helm install command to launch everything as [described above](#launch-Spark-and-Notebook-servers). For Spark
 batch job (Spark-submit) follow instructions below (you need additional configuration)
 
 You can access the History server UI using URL History-server-external-IP:18080
@@ -305,7 +305,6 @@ enables the Kubernetes service abstraction by maintaining network rules on the h
 
 ![Kubernetes Architecture](kubernetes-how-does-it-work.1.png)
 
-
 #### Spark on Kubernetes
 When a Spark application is submitted to the Master Node of Kubernetes cluster, a driver pod will be created first. 
 Once the driver pod is up and running, it will communicate back to Master Node and asks for executor pods creation, 
@@ -313,8 +312,10 @@ once the executor pods are created, they will communicate with driver pod and st
 
 ![spark on k8s Architecture](spark-on-kubernetes-how-does-it-work.2.png)
 
+(see [description](https://azureq.gitbooks.io/data-on-kubernetes/content/chapter1.html) from Qi Shao for more details)
 
-### Composite Spark applications using Helm Charts
+
+#### Composite Spark applications using Helm Charts
 
 ![High Level Architecture](k8s-helm-spark-architecture-draw.io.png)
 
@@ -350,3 +351,89 @@ Note that in the completed state, the driver pod does not use any computational 
 The driver and executor pod scheduling is handled by Kubernetes. It is possible to schedule the driver and executor pods 
 on a subset of available nodes through a node selector using the configuration property for it. It will be possible to 
 use more advanced scheduling hints like node/pod affinities in a future release.
+
+
+### Submitting Applications to Kubernetes (details)
+
+Use `spark-submit` to submit Spark batch jobs. The quickstart above provided an example for how to run the Pi Application
+that was packaged within the docker image using the `local:\\\<path to JAR>`. 
+
+
+The Spark master, specified either via passing the `--master` command line argument to `spark-submit` or by setting
+`spark.master` in the application's configuration, must be a URL with the format `k8s://<api_server_url>`. Prefixing the
+master string with `k8s://` will cause the Spark application to launch on the Kubernetes cluster, with the API server
+being contacted at `api_server_url`. If no HTTP protocol is specified in the URL, it defaults to `https`. For example,
+setting the master to `k8s://example.com:443` is equivalent to setting it to `k8s://https://example.com:443`, but to
+connect without TLS on a different port, the master would be set to `k8s://http://example.com:8443`.
+
+One way to discover the apiserver URL is by executing `kubectl cluster-info`.
+
+    > kubectl cluster-info
+    Kubernetes master is running at http://127.0.0.1:8080
+
+In the above example, the specific Kubernetes cluster can be used with spark submit by specifying
+`--master k8s://http://127.0.0.1:8080` as an argument to spark-submit.
+
+Note that applications can currently only be executed in cluster mode, where the driver and its executors are running on
+the cluster.
+
+When Kubernetes [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) is enabled,
+the `default` service account used by the driver may not have appropriate pod `edit` permissions
+for launching executor pods. We recommend to add another service account, say `spark`, with
+the necessary privilege. For example:
+
+    kubectl create serviceaccount spark
+    kubectl create clusterrolebinding spark-edit --clusterrole edit  \
+        --serviceaccount default:spark --namespace default
+
+With this, one can add `--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark` to
+the spark-submit command line above to specify the service account to use.
+
+### Dependency Management
+
+(*TODO*: Fix this ... stuff below copied from [here](https://github.com/apache-spark-on-k8s/spark/edit/branch-2.2-kubernetes/docs/running-on-kubernetes.md))
+
+Application dependencies that are being submitted from your machine need to be sent to a **resource staging server**
+that the driver and executor can then communicate with to retrieve those dependencies. A YAML file denoting a minimal
+set of Kubernetes resources that runs this service is located in the file `conf/kubernetes-resource-staging-server.yaml`.
+This YAML file configures a Deployment with one pod running the resource staging server configured with a ConfigMap,
+and exposes the server through a Service with a fixed NodePort. Deploying a resource staging server with the included
+YAML file requires you to have permissions to create Deployments, Services, and ConfigMaps.
+
+To run the resource staging server with default configurations, the Kubernetes resources can be created:
+
+    kubectl create -f conf/kubernetes-resource-staging-server.yaml
+
+and then you can compute the value of Pi as follows:
+
+    bin/spark-submit \
+      --deploy-mode cluster \
+      --class org.apache.spark.examples.SparkPi \
+      --master k8s://<k8s-apiserver-host>:<k8s-apiserver-port> \
+      --kubernetes-namespace default \
+      --conf spark.executor.instances=5 \
+      --conf spark.app.name=spark-pi \
+      --conf spark.kubernetes.driver.docker.image=kubespark/spark-driver:v2.2.0-kubernetes-0.3.0 \
+      --conf spark.kubernetes.executor.docker.image=kubespark/spark-executor:v2.2.0-kubernetes-0.3.0 \
+      --conf spark.kubernetes.initcontainer.docker.image=kubespark/spark-init:v2.2.0-kubernetes-0.3.0 \
+      --conf spark.kubernetes.resourceStagingServer.uri=http://<address-of-any-cluster-node>:31000 \
+      examples/jars/spark-examples_2.11-2.2.0-k8s-0.3.0.jar
+
+The Docker image for the resource staging server may also be built from source, in a similar manner to the driver
+and executor images. The Dockerfile is provided in `dockerfiles/resource-staging-server/Dockerfile`.
+
+The provided YAML file specifically sets the NodePort to 31000 on the service's specification. If port 31000 is not
+available on any of the nodes of your cluster, you should remove the NodePort field from the service's specification
+and allow the Kubernetes cluster to determine the NodePort itself. Be sure to provide the correct port in the resource
+staging server URI when submitting your application, in accordance to the NodePort chosen by the Kubernetes cluster.
+
+#### Dependency Management Without The Resource Staging Server
+
+Note that this resource staging server is only required for submitting local dependencies. If your application's
+dependencies are all hosted in remote locations like HDFS or http servers, they may be referred to by their appropriate
+remote URIs. Also, application dependencies can be pre-mounted into custom-built Docker images. Those dependencies
+can be added to the classpath by referencing them with `local://` URIs and/or setting the `SPARK_EXTRA_CLASSPATH`
+environment variable in your Dockerfiles.
+
+
+
