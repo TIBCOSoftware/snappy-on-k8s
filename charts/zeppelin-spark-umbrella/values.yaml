@@ -9,21 +9,10 @@ global:
   # internal attribute. Do not change
   umbrellaChart: true
 
-# configuration for Spark History Server
-history-server:
-  historyServerConf:
-    # URI of the GCS bucket
-    eventsDir: "gs://spark_history_server_testing/"
-
-    # sparkonk8s-test.json is name of the keyfile to access GCS bucket got history log.
-    # Change it to reflect name of your key file. Key file will always be in path /etc/secret
-  environment:
-    SPARK_HISTORY_OPTS: -Dspark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
-
-  resources: {}
-
 # configuration for Zeppelin environment
 zeppelin:
+  # whether to enable Zeppelin
+  enabled: true
   # Any environment variables that need to be made available to the container are defined here
   # This may include environment variables used by Spark, Zeppelin
 
@@ -35,9 +24,9 @@ zeppelin:
        --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0
        --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0
        --conf spark.executor.instances=2
-       --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
+#       --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
   sparkEventLog:
-    enableHistoryEvents: true
+    enableHistoryEvents: false
     # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
     eventLogDir: "gs://spark_history_server_testing/"
   noteBookStorage:
@@ -73,28 +62,49 @@ zeppelin:
     #  cpu: 100m
     #  memory: 128Mi
 
+# configuration for Spark History Server
+history-server:
+  # whether to enable history server
+  enabled: false
+  historyServerConf:
+    # URI of the GCS bucket
+    eventsDir: "gs://spark_history_server_testing/"
+
+    # sparkonk8s-test.json is name of the keyfile to access GCS bucket got history log.
+    # Change it to reflect name of your key file. Key file will always be in path /etc/secret
+  environment:
+    SPARK_HISTORY_OPTS: -Dspark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
+
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    # requests:
+    #  cpu: 100m
+    #  memory: 128Mi
+
 # configuration for Spark Resource Staging Server
 rss:
   # properties that can be made available via configmap
   properties:
       spark.ssl.kubernetes.resourceStagingServer.enabled: false
-resources:
-  limits:
-    cpu: 100m
-    memory: 1Gi
-  requests:
-    cpu: 100m
-    memory: 256Mi
+resources: {}
+#  limits:
+#    cpu: 100m
+#    memory: 1Gi
+#  requests:
+#    cpu: 100m
+#    memory: 256Mi
 
 # configuration for Spark Shuffle Service
 shuffle-service:
   shufflePodLabels:
     app: spark-shuffle-service
     spark-version: 2.2.0
-  resources:
-    limits:
-      cpu: 200m
-    #  memory: 128Mi
-    requests:
-      cpu: 200m
-    #  memory: 128Mi
+  resources: {}
+#    limits:
+#      cpu: 200m
+#    #  memory: 128Mi
+#    requests:
+#      cpu: 200m
+#    #  memory: 128Mi

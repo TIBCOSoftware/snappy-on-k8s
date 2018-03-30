@@ -9,7 +9,7 @@ the respective components. A user can configure each subchart in parent chart's
   ```
   helm dep up zeppelin-spark-umbrella
   ```
-  The above command will being in dependent subcharts in the charts directory. For example:
+  The above command will bring in dependent subcharts in the charts directory. For example:
   
   ```
   $ ls zeppelin-spark-umbrella/charts/
@@ -49,6 +49,7 @@ the respective components. A user can configure each subchart in parent chart's
             --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
        sparkEventLog:
          enableHistoryEvents: true
+         eventLogDir: "gs://spark_history_server_testing/"
      ```
        
 4.  Deploy the umbrella chart
@@ -56,9 +57,4 @@ the respective components. A user can configure each subchart in parent chart's
     helm install --name zp ./zeppelin-spark-umbrella/
     ```
     
-5. Zeppelin and History Server URL can be accessed from the K8s UI dashboard (services link)
-     
-
-   
-  
-
+5. Zeppelin and History Server URL can be accessed from the K8s UI dashboard (services section)

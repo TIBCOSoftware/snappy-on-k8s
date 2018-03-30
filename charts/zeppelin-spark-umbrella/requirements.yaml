@@ -4,10 +4,12 @@ dependencies:
     repository: file://../spark-hs
     version: 0.1.0
     alias: history-server
+    condition: history-server.enabled
   - name:  spark-k8s-zeppelin-chart
     repository: file://../spark-k8s-zeppelin-chart
     version: 0.1.0
     alias: zeppelin
+    condition: zeppelin.enabled
   - name:  spark-rss
     repository: file://../spark-rss
     version: 0.1.0
