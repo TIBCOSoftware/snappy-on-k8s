@@ -63,7 +63,7 @@ zeppelin:
     #  memory: 128Mi
 
 # configuration for Spark History Server
-history-server:
+historyServer:
   # whether to enable history server
   enabled: false
   historyServerConf:
@@ -97,7 +97,7 @@ resources: {}
 #    memory: 256Mi
 
 # configuration for Spark Shuffle Service
-shuffle-service:
+shuffle:
   shufflePodLabels:
     app: spark-shuffle-service
     spark-version: 2.2.0

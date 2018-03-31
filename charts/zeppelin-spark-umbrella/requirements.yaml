@@ -3,8 +3,8 @@ dependencies:
   - name: spark-hs
     repository: file://../spark-hs
     version: 0.1.0
-    alias: history-server
-    condition: history-server.enabled
+    alias: historyServer
+    condition: historyServer.enabled
   - name:  spark-k8s-zeppelin-chart
     repository: file://../spark-k8s-zeppelin-chart
     version: 0.1.0
@@ -17,5 +17,5 @@ dependencies:
   - name:  spark-shuffle
     repository: file://../spark-shuffle
     version: 0.1.0
-    alias: shuffle-service
+    alias: shuffle
 

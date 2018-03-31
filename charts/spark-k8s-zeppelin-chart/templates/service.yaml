@@ -21,7 +21,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ .Release.Name }}-spark-web-ui"
+  name: "{{ .Release.Name }}-zeppelin-spark-web-ui"
   labels:
     app: {{ template "spark-k8s-zeppelin-chart.name" . }}
     chart: {{ template "spark-k8s-zeppelin-chart.chart" . }}
