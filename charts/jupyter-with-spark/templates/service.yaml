@@ -21,7 +21,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: spark-web-ui
+  name: {{ .Release.Name }}-spark-web-ui
   labels:
     app: {{ template "jupyter-with-spark.name" . }}
     chart: {{ template "jupyter-with-spark.chart" . }}

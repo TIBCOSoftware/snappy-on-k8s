@@ -21,3 +21,13 @@ data:
     log4j.properties: |-
       {{- range .Files.Lines "conf/spark/log4j.properties" }}
         {{ . }}{{ end }}
+---
+{{- if and .Values.mountSecrets (not .Values.global.umbrellaChart) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-secrets
+type: Opaque
+data:
+{{ (.Files.Glob "conf/secrets/*").AsSecrets | indent 2 }}
+{{- end }}
