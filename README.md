@@ -413,8 +413,8 @@ We will use spark-submit from this distribution to deploy a batch job. Example b
       --conf spark.executor.instances=5 \
       --conf spark.app.name=spark-pi \
       --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.0 \
-      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.3.0 \
-      --conf spark.kubernetes.initcontainer.docker.image=snappydatainc/spark-init:v2.2.0-kubernetes-0.3.0 \
+      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.0 \
+      --conf spark.kubernetes.initcontainer.docker.image=snappydatainc/spark-init:v2.2.0-kubernetes-0.5.0 \
       --conf spark.kubernetes.resourceStagingServer.uri=http://<URI of resource staging server as displayed on console while deploying it> \
       examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar
 
@@ -429,5 +429,51 @@ remote URIs. Also, application dependencies can be pre-mounted into custom-built
 can be added to the classpath by referencing them with `local://` URIs and/or setting the `SPARK_EXTRA_CLASSPATH`
 environment variable in your Dockerfiles.
 
+### Dynamic Executor Scaling
+Spark provides a mechanism to dynamically adjust the the number of executors your application uses based on the workload. 
+This means that your application can reduce the number of executors when there is no demand and request them again later
+when there is demand. This feature is particularly useful if multiple applications share resources in your Spark cluster.
 
+Spark on Kubernetes supports Dynamic Allocation. This mode requires running an external shuffle 
+service. This is typically a daemonset with a provisioned hostpath volume. This shuffle service may be shared by 
+executors belonging to different SparkJobs. The umbrella chart described in [quickstart](#Quickstart) deploys 
+shuffle service daemonset.
 
+Spark application can target a particular shuffle service based on the labels assigned to the pods in the shuffle 
+daemonset. For example, the umbrella chart creates a shuffle service daemon set and has pods with labels 
+app=spark-shuffle-service and spark-version=2.2.0, we can use those tags to target that particular shuffle service at 
+job launch time. In order to run a job with dynamic allocation enabled, the command may then look like the following:
+
+```
+  bin/spark-submit \
+    --deploy-mode cluster \
+    --class org.apache.spark.examples.GroupByTest \
+    --master k8s://<k8s-master>:<port> \
+    --kubernetes-namespace default \
+    --conf spark.app.name=group-by-test \
+    --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.0 \
+    --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.0 \
+    --conf spark.dynamicAllocation.enabled=true \
+    --conf spark.shuffle.service.enabled=true \
+    --conf spark.kubernetes.shuffle.namespace=default \
+    --conf spark.kubernetes.shuffle.labels="app=spark-shuffle-service,spark-version=2.2.0" \
+    local:///opt/spark/examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar 10 400000 2
+```
+
+In order to enable dynamic executor scaling for Zeppelin notebooks, one may modify the 'values.yaml' and set 
+SPARK_SUBMIT_OPTIONS accordingly. For example,
+
+```
+  SPARK_SUBMIT_OPTIONS: >-
+     --kubernetes-namespace default
+     --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.0
+     --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.0
+     --conf spark.driver.cores="300m"
+     --conf spark.dynamicAllocation.enabled=true
+     --conf spark.shuffle.service.enabled=true
+     --conf spark.kubernetes.shuffle.namespace=default
+     --conf spark.kubernetes.shuffle.labels="app=spark-shuffle-service,spark-version=2.2.0"
+     --conf spark.dynamicAllocation.initialExecutors=0
+     --conf spark.dynamicAllocation.minExecutors=1
+     --conf spark.dynamicAllocation.maxExecutors=5
+```
