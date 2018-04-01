@@ -1,3 +1,4 @@
+{{- if (not .Values.global.umbrellaChart) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,7 +7,9 @@ data:
     jupyter_notebook_config.py: |-
       {{- range .Files.Lines "conf/jupyter/jupyter_notebook_config.py" }}
         {{ . }}{{ end }}
+{{- end }}
 ---
+{{- if (not .Values.global.umbrellaChart) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -21,12 +24,13 @@ data:
     log4j.properties: |-
       {{- range .Files.Lines "conf/spark/log4j.properties" }}
         {{ . }}{{ end }}
+{{- end }}
 ---
 {{- if and .Values.mountSecrets (not .Values.global.umbrellaChart) }}
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Release.Name }}-secrets
+  name: {{ .Release.Name }}-jp-secrets
 type: Opaque
 data:
 {{ (.Files.Glob "conf/secrets/*").AsSecrets | indent 2 }}

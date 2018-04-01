@@ -88,8 +88,8 @@ Spark history server UI to view the job execution details.
       --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json \
       --conf spark.kubernetes.driver.secrets.history-secrets=/etc/secrets \
       --conf spark.kubernetes.executor.secrets.history-secrets=/etc/secrets \
-      --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0 \
-      --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0 \
+      --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 \
+      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1 \
       local:///opt/spark/examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar  
   ```
 

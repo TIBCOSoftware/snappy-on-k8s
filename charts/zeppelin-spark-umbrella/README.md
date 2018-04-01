@@ -13,7 +13,7 @@ the respective components. A user can configure each subchart in parent chart's
   
   ```
   $ ls zeppelin-spark-umbrella/charts/
-  spark-hs-0.1.0.tgz  spark-k8s-zeppelin-chart-0.1.0.tgz  spark-rss-0.1.0.tgz  spark-shuffle-0.1.0.tgz
+  jupyter-with-spark-0.1.0.tgz spark-hs-0.1.0.tgz  spark-k8s-zeppelin-chart-0.1.0.tgz  spark-rss-0.1.0.tgz  spark-shuffle-0.1.0.tgz
 
   ```
   
@@ -37,19 +37,24 @@ the respective components. A user can configure each subchart in parent chart's
      environment:
        SPARK_HISTORY_OPTS: -Dspark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
      ```
-     3. Similar to step 2 configure Zeppelin to log events to the same GCS bucket
+     3. Similar to step 2, configure Zeppelin to log events to the same GCS bucket
      ```
      zeppelin:
        environment:
          SPARK_SUBMIT_OPTIONS: >-
             --kubernetes-namespace default
-            --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0
-            --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0
+            --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
+            --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
             --conf spark.executor.instances=2
             --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
        sparkEventLog:
          enableHistoryEvents: true
          eventLogDir: "gs://spark_history_server_testing/"
+     ```
+     4. For Jupyter notebook server, you can enable history logging by setting sparkEventLog.enableHistoryEvents to true.
+     ```python
+      sparkEventLog:
+        enableHistoryEvents: true
      ```
        
 4.  Deploy the umbrella chart
@@ -57,4 +62,4 @@ the respective components. A user can configure each subchart in parent chart's
     helm install --name zp ./zeppelin-spark-umbrella/
     ```
     
-5. Zeppelin and History Server URL can be accessed from the K8s UI dashboard (services section)
+5. Jupyter, Zeppelin and History Server URL can be accessed from the K8s UI dashboard (services section)

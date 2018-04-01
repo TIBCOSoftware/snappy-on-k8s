@@ -4,8 +4,8 @@
 replicaCount: 1
 
 image:
-  repository: snappydatainc/spark-k8s-jupyter-notebook
-  tag: 5.2.1-2.2.0-0.1
+  repository: snappydatainc/jupyter-notebook
+  tag: 5.2.2-spark-v2.2.0-kubernetes-0.5.1
   pullPolicy: Always
 
 jupyterService:
@@ -20,10 +20,10 @@ sparkWebUI:
   port: 4040
 
 serviceAccount: default
-mountSecrets: true
+mountSecrets: false
 
 sparkEventLog:
-  enableHistoryEvents: true
+  enableHistoryEvents: false
   # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
   eventLogDir: "gs://spark_history_server_testing/"
 
@@ -42,7 +42,7 @@ persistence:
   #
   # storageClass: "-"
   accessMode: ReadWriteOnce
-  size: 8Gi
+  size: 6Gi
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
