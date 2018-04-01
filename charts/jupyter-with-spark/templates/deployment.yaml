@@ -49,7 +49,7 @@ spec:
               echo "spark.eventLog.enabled                         true" >> /opt/spark/conf/spark-defaults.conf;
               echo "spark.eventLog.dir                             {{ .Values.sparkEventLog.eventLogDir }}" >> /opt/spark/conf/spark-defaults.conf;
             {{- end }}
-            {{- if .Values.mountSecrets }}
+            {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
               echo "spark.kubernetes.driver.secrets.{{ .Release.Name }}-secrets   /etc/secrets" >> /opt/spark/conf/spark-defaults.conf;
             {{- end }}
             {{- if eq .Values.jupyterService.password "" }}
@@ -79,7 +79,7 @@ spec:
             mountPath: /tmp/conf/spark/
           - name: jupyter-config
             mountPath: /tmp/conf/jupyter/
-        {{- if .Values.mountSecrets }}
+        {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
           - name: secrets-volume
             mountPath: /etc/secrets/
         {{- end }}
@@ -109,8 +109,8 @@ spec:
             name: {{ .Release.Name }}-jupyter-configmap
         - name: spark-config
           configMap:
-            name: {{ .Release.Name }}-spark-configmap
-        {{- if .Values.mountSecrets }}
+            name: {{ .Release.Name }}-jp-spark-configmap
+        {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
         - name: secrets-volume
           secret:
             secretName: {{ .Release.Name }}-jp-secrets

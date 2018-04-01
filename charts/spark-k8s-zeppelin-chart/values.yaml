@@ -35,7 +35,7 @@ sparkEventLog:
   # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
   eventLogDir: "gs://spark_history_server_testing/"
 
-# if mountSecrets is set to true files in 'secrets' directory will be mounted
+# if mountSecrets is set to true files in 'conf/secrets' directory will be mounted
 # on path '/etc/secrets' as secrets
 mountSecrets: false
 

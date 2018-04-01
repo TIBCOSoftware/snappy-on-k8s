@@ -13,7 +13,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-spark-configmap
+  name: {{ .Release.Name }}-jp-spark-configmap
 data:
     spark-defaults.conf: |-
       {{- range .Files.Lines "conf/spark/spark-defaults.conf" }}

@@ -32,6 +32,53 @@ This chart is work-in-progress
 ```
   *NOTE*: It may take a few minutes before the LoadBalancer's IP is available. You can watch the status of by running `kubectl get svc -w upyter-jupyter-notebook-ui`
 
+### Enabling event logging on Google Cloud Storage (GCS)
+To enable event logging for the spark application which you would launch via Jupyter notebooks, follow these steps **before** installing this chart.
+
+   1. Set `sparkEventLog.enableHistoryEvents` to true in values.yaml.
+ 
+   ```python
+   sparkEventLog:
+     enableHistoryEvents: true
+   ```
+ 
+   2. Specify the location of event log directory on your GCS bucket in values.yaml.
+
+   ```python
+   # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
+   eventLogDir: "gs://my_bucket_name/event_logs/"
+   ```
+
+   3. Uncomment the line in conf/spark/spark-defaults.conf to specify the keyfile for accessing your GCS bucket.
+
+   **NOTE:** You should only update the name of your keyfile, retaining its path to be /etc/secrets/.
+
+   ```python
+   # Uncomment below line and replace sparkonk8s-test.json with the actual name of your keyfile
+   # to enable access to Google Cloud Storage.
+   spark.hadoop.google.cloud.auth.service.account.json.keyfile   /etc/secrets/bucket-access-key.json
+   ```
+
+   4. Place your GCS keyfile under conf/secrets directory of the chart.
+
+Refer to the [readme doc](../spark-hs/README.md) of Spark History Server chart, to launch the history server and monitor event logs of all your Spark applications.
+
+### Setting password for your Jupyter notebook server
+This chart by default enables authentication for your Jupyter notebook server. The default password is abc123
+
+Change this password by setting it as the value of `jupyterService.password` attribute in values.yaml.
+
+```python
+jupyterService:
+  type: LoadBalancer
+  port: 8888
+  # Set your password to access the notebook server. A default ('abc123') has been set for you.
+  # Setting the password to empty string will disable the authentication (not recommended).
+  password: 'your-new-password'
+```
+
+**NOTE**: if you set a new password via conf/jupyter/jupyter_notebook_config.py, it'll still be overridden by what you specify in values.yaml.
+
 # Running Spark application via notebook 
 Create a new notebook based on Python 2 and launch a Spark cluster by creating SparkContext.
 

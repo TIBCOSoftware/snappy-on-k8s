@@ -29,11 +29,11 @@ admin permission to bucket gs://spark-history-server.
     ```
     
 2.  In order for history server to be able read from the GCS bucket, we need 
-    to mount the json key file on the history server pod. First copy the json file into 'secrets' 
+    to mount the json key file on the history server pod. First copy the json file into 'conf/secrets' 
     directory for spark history server chart
     
     ```
-    $ cp sparkonk8s-test.json spark-hs/secrets/
+    $ cp sparkonk8s-test.json spark-hs/conf/secrets/
     ```
     
 3.  Modify the 'values.yaml' file and specify the GCS bucket path created above. History server 

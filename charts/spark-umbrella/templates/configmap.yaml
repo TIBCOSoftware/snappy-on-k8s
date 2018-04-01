@@ -5,7 +5,7 @@ metadata:
   name: {{ .Release.Name }}-hs-secrets
 type: Opaque
 data:
-{{ (.Files.Glob "secrets/*").AsSecrets | indent 2 }}
+{{ (.Files.Glob "conf/secrets/*").AsSecrets | indent 2 }}
 {{- end }}
 ---
 {{- if .Values.global.mountZeppelinConf }}
@@ -14,7 +14,7 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-zeppelin-configmap
 data:
-{{ (.Files.Glob "zeppelinConf/*").AsConfig | indent 2 }}
+{{ (.Files.Glob "conf/zeppelin/*").AsConfig | indent 2 }}
 {{- end }}
 ---
 {{- if .Values.global.mountJupyterConf }}
@@ -23,7 +23,7 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-jupyter-configmap
 data:
-{{ (.Files.Glob "jupyterConf/*").AsConfig | indent 2 }}
+{{ (.Files.Glob "conf/jupyter/*").AsConfig | indent 2 }}
 {{- end }}
 ---
 {{- if .Values.global.mountSparkConf }}
@@ -32,14 +32,14 @@ kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-zpspark-configmap
 data:
-{{ (.Files.Glob "sparkConf/*").AsConfig | indent 2 }}
+{{ (.Files.Glob "conf/spark/*").AsConfig | indent 2 }}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-spark-configmap
+  name: {{ .Release.Name }}-jp-spark-configmap
 data:
-{{ (.Files.Glob "sparkConf/*").AsConfig | indent 2 }}
+{{ (.Files.Glob "conf/spark/*").AsConfig | indent 2 }}
 {{- end }}
 ---
 {{- if .Values.global.mountSecrets }}
@@ -49,7 +49,7 @@ metadata:
   name: {{ .Release.Name }}-zp-secrets
 type: Opaque
 data:
-{{ (.Files.Glob "secrets/*").AsSecrets | indent 2 }}
+{{ (.Files.Glob "conf/secrets/*").AsSecrets | indent 2 }}
 {{- end }}
 ---
 {{- if .Values.global.mountSecrets }}
@@ -59,5 +59,5 @@ metadata:
   name: {{ .Release.Name }}-jp-secrets
 type: Opaque
 data:
-{{ (.Files.Glob "secrets/*").AsSecrets | indent 2 }}
+{{ (.Files.Glob "conf/secrets/*").AsSecrets | indent 2 }}
 {{- end }}

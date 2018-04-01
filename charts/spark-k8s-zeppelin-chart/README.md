@@ -88,9 +88,9 @@ Here we list steps to configure Spark event logging on Google Cloud Storage
 	  enableHistoryEvents: true
 	  eventLogDir: "gs://spark-history-server/"
 	```
-3. To allow Spark Driver to write to GCS bucket, we need to mount the json key file on the driver pod. First copy the json file into 'secrets' directory of spark-k8s-zeppelin chart
+3. To allow Spark Driver to write to GCS bucket, we need to mount the json key file on the driver pod. First copy the json file into 'conf/secrets' directory of spark-k8s-zeppelin chart
 	```
-	$ cp sparkonk8s-test.json spark-k8s-zeppelin-chart/secrets/
+	$ cp sparkonk8s-test.json spark-k8s-zeppelin-chart/conf/secrets/
 	```
     Also set 'mountSecrets' field of values.yaml file to true. When 'mountSecrets' 
     is set to true json key file will be mounted on path '/etc/secrets' of the pod.  

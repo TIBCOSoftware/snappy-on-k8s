@@ -7,21 +7,21 @@ the respective components. A user can configure each subchart in parent chart's
 # Usage
 1. Get the dependencies (subcharts) required by the chart
   ```
-  helm dep up zeppelin-spark-umbrella
+  helm dep up spark-umbrella
   ```
   The above command will bring in dependent subcharts in the charts directory. For example:
   
   ```
-  $ ls zeppelin-spark-umbrella/charts/
+  $ ls spark-umbrella/charts/
   jupyter-with-spark-0.1.0.tgz spark-hs-0.1.0.tgz  spark-k8s-zeppelin-chart-0.1.0.tgz  spark-rss-0.1.0.tgz  spark-shuffle-0.1.0.tgz
 
   ```
   
-2. Copy you json key file to access the GCS bucket in the secrets directory of parent chart.
+2. Copy you json key file to access the GCS bucket in the conf/secrets directory of parent chart.
   For example:
   
   ```
-  cp sparkonk8s-test.json zeppelin-spark-umbrella/secrets/
+  cp sparkonk8s-test.json spark-umbrella/conf/secrets/
   ```
 
 3. Modify the  `values.yaml` file. Specify the following required attributes for history server configuration
@@ -59,7 +59,7 @@ the respective components. A user can configure each subchart in parent chart's
        
 4.  Deploy the umbrella chart
     ```
-    helm install --name zp ./zeppelin-spark-umbrella/
+    helm install --name su ./spark-umbrella/
     ```
     
 5. Jupyter, Zeppelin and History Server URL can be accessed from the K8s UI dashboard (services section)

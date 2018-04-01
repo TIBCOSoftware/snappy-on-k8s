@@ -27,7 +27,7 @@ historyServerConf:
   enablePVC: false
   existingClaimName: "claim"
 
-# copy your key file in 'secrets' directory and set mountSecrets to true
+# copy your key file in 'conf/secrets' directory and set mountSecrets to true
 # key file will be mounted on '/etc/secrets'
 mountSecrets: true
 
