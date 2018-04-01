@@ -26,7 +26,7 @@ This project is a collaborative effort between SnappyData and Pivotal.
 
 ## Features
 - Full support for Spark 2.2 applications running on PKS 1.x on both Google cloud and on-prem VMWare cloud environments.
-The project leverages [spark-on-k8s]() work.
+The project leverages [spark-on-k8s](https://github.com/apache-spark-on-k8s/spark) work.
 - Deploy batch spark jobs using kubernetes master as the cluster/resource manager
 - Helm chart to deploy Zeppelin, centralized logging, monitoring across apps (using History server)
 - Helm chart to deploy Jupyter,  centralized logging, monitoring across apps (using History server)
@@ -102,6 +102,9 @@ each of the individual subchart's 'values.yaml' file. The umbrella chart's 'valu
 # fetch the chart repo ....
 git clone https://github.com/SnappyDataInc/spark-on-k8s
 
+# Get the subcharts required by the umbrella chart
+helm dep up zeppelin-spark-umbrella
+
 # Now, install the chart
 cd charts
 helm install --name spark-all ./zeppelin-spark-umbrella/
@@ -118,11 +121,11 @@ kubectl get services -w
 
 Once everything is up and running you will see something like this:
 ```text
-NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                      AGE
-kubernetes                 ClusterIP      10.11.240.1     <none>           443/TCP                      32d
-spark-all-rss              LoadBalancer   10.11.249.80    35.194.62.140    10000:31000/TCP              2h
-spark-all-spark-web-ui     LoadBalancer   10.11.241.218   35.188.200.10    4040:32033/TCP               2h
-spark-all-zeppelin         LoadBalancer   10.11.249.81    35.225.23.173    8080:30927/TCP               2h
+NAME                              TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)           AGE
+kubernetes                        ClusterIP      10.63.240.1     <none>          443/TCP           1d
+spark-all-rss                     LoadBalancer   10.63.246.190   35.192.235.35   10000:31000/TCP   9m
+spark-all-zeppelin                LoadBalancer   10.63.254.150   35.192.68.147   8080:30522/TCP    9m
+spark-all-zeppelin-spark-web-ui   LoadBalancer   10.63.253.49    35.188.92.84    4040:32276/TCP    9m
 ```
 > Access the zeppelin notebook environment using URL external-ip:8080 from any browser.
 > Spark UI is accessible using URL external-ip:4040. 
@@ -130,6 +133,17 @@ NOTE that the Spark UI is only accessible after you have run at least one Spark 
 Simply navigate to <Zeppelin Home>; Click 'Zeppelin Tutorial' and then 'Basic Features(Spark)'. Run the 'Load
 data' paragraph followed by one or more SQL paragraphs. 
 
+#### Launch the kubernetes dashboard
+> You can launch the Kubernetes dashboard (If using GCP you can get to the dashboard from the GCP console) to inspect the 
+various deployed objects, associated pods and login the containers to get a better sense for what is going on
+```text
+# To launch the dashboard, do this ... We use a proxy to access the dashboard locally ...
+kubectl proxy
+
+# Goto URL localhost:8001/ui. The page will request a token .... 
+# Get the token using ....
+kubectl config view | grep -A10 "name: $(kubectl config current-context)" | awk '$1=="access-token:"{print $2}' 
+```
 
 #### Launch a Spark batch job
 
@@ -149,18 +163,6 @@ The 'local://' URL will result in looking for the JAR in the launched container.
 ```
 > If you face OAuth token expiry errors when you run spark-submit, it is likely because the token needs to be refreshed.
  The easiest way to fix this is to run any kubectl command, say, kubectl version and then retry your submission.
-
-#### Launch the kubernetes dashboard
-> You can launch the Kubernetes dashboard (If using GCP you can get to the dashboard from the GCP console) to inspect the 
-various deployed objects, associated pods and login the containers to get a better sense for what is going on
-```text
-# To launch the dashboard, do this ... We use a proxy to access the dashboard locally ...
-kubectl proxy
-
-# Goto URL localhost:8001/ui. The page will request a token .... 
-# Get the token using ....
-kubectl config view | grep -A10 "name: $(kubectl config current-context)" | awk '$1=="access-token:"{print $2}' 
-```
 
 #### Stop/delete everything
 You can delete everything using 'helm delete'. Note that any changes to notebooks, data, etc will be gone too. 
@@ -182,8 +184,8 @@ We need a shared persistent volume to manage state: Spark events from distribute
 using Zeppelin or Jupyter) that you want to preserve/share. Note containers only manage ephemeral state. You need to 
 have external persistence so your data survives pod failures or restarts.  
 
-> We describe the steps to use Google cloud storage. We will soon describe the steps to setup NFS as a possible solution
-across cloud environments. 
+> We describe the steps to use Google cloud storage for Spark Events. We will soon describe the steps to setup NFS as a 
+possible solution across cloud environments. 
 
 #### Steps to setup storage using Google Cloud Storage (GCS)
 In this example, we use Google Cloud Storage(GCS) to persist the events generated by Spark applications. You don't need 
@@ -208,17 +210,20 @@ and associate them with your GCP project.
     gsutil iam ch serviceAccount:${ACCOUNT_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com:objectAdmin gs://spark-history-server-store
     ```
 In order for history server to be able read from the GCS bucket, we need to mount the json key file on the history 
-server pod. Copy the json file into 'secrets' directory for spark history server chart.
+server pod. Copy the json file into 'secrets' directory for umbrella chart.
 
 ```text
-cp sparkonk8s-test.json spark-hs/secrets/
+cp sparkonk8s-test.json zeppelin-spark-umbrella/secrets/
 ```
 
-Modify the 'values.yaml' file in the umbrella chart and specify the GCS bucket path created above. 
-History server will read spark events from this path
+By default, umbrella chart does not deploy the History server. We enable the History server deployment by modifying the
+'values.yaml' file. We also specify the GCS bucket path created above. History server will read spark events from this 
+path.  
 
 ```text
-history-server:
+historyServer:
+  # whether to enable history server
+  enabled: true
   historyServerConf:
     # URI of the GCS bucket
     eventsDir: "gs://spark-history-server-store"
@@ -271,13 +276,13 @@ Once job finishes, use the Spark history server UI to view the job execution det
       --name spark-pi \
       --class org.apache.spark.examples.SparkPi \
       --conf spark.eventLog.enabled=true \
-      --conf spark.eventLog.dir=gs://spark-history-server/ \
+      --conf spark.eventLog.dir=gs://spark-history-server-store/ \
       --conf spark.executor.instances=2 \
       --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json \
       --conf spark.kubernetes.driver.secrets.history-secrets=/etc/secrets \
       --conf spark.kubernetes.executor.secrets.history-secrets=/etc/secrets \
-      --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0 \
-      --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0 \
+      --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.0 \
+      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.0 \
       local:///opt/spark/examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar  
   ```
 
@@ -391,20 +396,14 @@ the spark-submit command line above to specify the service account to use.
 
 ### Dependency Management
 
-(*TODO*: Fix this ... stuff below copied from [here](https://github.com/apache-spark-on-k8s/spark/edit/branch-2.2-kubernetes/docs/running-on-kubernetes.md))
-
 Application dependencies that are being submitted from your machine need to be sent to a **resource staging server**
-that the driver and executor can then communicate with to retrieve those dependencies. A YAML file denoting a minimal
-set of Kubernetes resources that runs this service is located in the file `conf/kubernetes-resource-staging-server.yaml`.
-This YAML file configures a Deployment with one pod running the resource staging server configured with a ConfigMap,
-and exposes the server through a Service with a fixed NodePort. Deploying a resource staging server with the included
-YAML file requires you to have permissions to create Deployments, Services, and ConfigMaps.
+that the driver and executor can then communicate with to retrieve those dependencies. The umbrella chart described in 
+[quickstart](#Quickstart) deploys resource staging server.  The command below shows how usage of resource staging
+server to specify jar for spark-examples. This jar will be copied from you local machine to the resource staging server
+which will make it available to the Spark driver and executors during job execution.
 
-To run the resource staging server with default configurations, the Kubernetes resources can be created:
-
-    kubectl create -f conf/kubernetes-resource-staging-server.yaml
-
-and then you can compute the value of Pi as follows:
+> Note: The spark distribution with support for kubernetes can be downloaded [here](https://github.com/apache-spark-on-k8s/spark/releases/tag/v2.2.0-kubernetes-0.5.0)
+We will use spark-submit from this distribution to deploy a batch job. Example below runs the built in SparkPi job. 
 
     bin/spark-submit \
       --deploy-mode cluster \
@@ -413,19 +412,14 @@ and then you can compute the value of Pi as follows:
       --kubernetes-namespace default \
       --conf spark.executor.instances=5 \
       --conf spark.app.name=spark-pi \
-      --conf spark.kubernetes.driver.docker.image=kubespark/spark-driver:v2.2.0-kubernetes-0.3.0 \
-      --conf spark.kubernetes.executor.docker.image=kubespark/spark-executor:v2.2.0-kubernetes-0.3.0 \
-      --conf spark.kubernetes.initcontainer.docker.image=kubespark/spark-init:v2.2.0-kubernetes-0.3.0 \
-      --conf spark.kubernetes.resourceStagingServer.uri=http://<address-of-any-cluster-node>:31000 \
-      examples/jars/spark-examples_2.11-2.2.0-k8s-0.3.0.jar
+      --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.0 \
+      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.0 \
+      --conf spark.kubernetes.initcontainer.docker.image=snappydatainc/spark-init:v2.2.0-kubernetes-0.5.0 \
+      --conf spark.kubernetes.resourceStagingServer.uri=http://<URI of resource staging server as displayed on console while deploying it> \
+      examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar
 
-The Docker image for the resource staging server may also be built from source, in a similar manner to the driver
-and executor images. The Dockerfile is provided in `dockerfiles/resource-staging-server/Dockerfile`.
-
-The provided YAML file specifically sets the NodePort to 31000 on the service's specification. If port 31000 is not
-available on any of the nodes of your cluster, you should remove the NodePort field from the service's specification
-and allow the Kubernetes cluster to determine the NodePort itself. Be sure to provide the correct port in the resource
-staging server URI when submitting your application, in accordance to the NodePort chosen by the Kubernetes cluster.
+> Note: The URL of the resource staging server can be found it using 'kubectl get svc' command. Use the externalIp:port
+combination of rss service to form the URL.
 
 #### Dependency Management Without The Resource Staging Server
 
@@ -435,5 +429,51 @@ remote URIs. Also, application dependencies can be pre-mounted into custom-built
 can be added to the classpath by referencing them with `local://` URIs and/or setting the `SPARK_EXTRA_CLASSPATH`
 environment variable in your Dockerfiles.
 
+### Dynamic Executor Scaling
+Spark provides a mechanism to dynamically adjust the the number of executors your application uses based on the workload. 
+This means that your application can reduce the number of executors when there is no demand and request them again later
+when there is demand. This feature is particularly useful if multiple applications share resources in your Spark cluster.
 
+Spark on Kubernetes supports Dynamic Allocation. This mode requires running an external shuffle 
+service. This is typically a daemonset with a provisioned hostpath volume. This shuffle service may be shared by 
+executors belonging to different SparkJobs. The umbrella chart described in [quickstart](#Quickstart) deploys 
+shuffle service daemonset.
 
+Spark application can target a particular shuffle service based on the labels assigned to the pods in the shuffle 
+daemonset. For example, the umbrella chart creates a shuffle service daemon set and has pods with labels 
+app=spark-shuffle-service and spark-version=2.2.0, we can use those tags to target that particular shuffle service at 
+job launch time. In order to run a job with dynamic allocation enabled, the command may then look like the following:
+
+```
+  bin/spark-submit \
+    --deploy-mode cluster \
+    --class org.apache.spark.examples.GroupByTest \
+    --master k8s://<k8s-master>:<port> \
+    --kubernetes-namespace default \
+    --conf spark.app.name=group-by-test \
+    --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.0 \
+    --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.0 \
+    --conf spark.dynamicAllocation.enabled=true \
+    --conf spark.shuffle.service.enabled=true \
+    --conf spark.kubernetes.shuffle.namespace=default \
+    --conf spark.kubernetes.shuffle.labels="app=spark-shuffle-service,spark-version=2.2.0" \
+    local:///opt/spark/examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar 10 400000 2
+```
+
+In order to enable dynamic executor scaling for Zeppelin notebooks, one may modify the 'values.yaml' and set 
+SPARK_SUBMIT_OPTIONS accordingly. For example,
+
+```
+  SPARK_SUBMIT_OPTIONS: >-
+     --kubernetes-namespace default
+     --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.0
+     --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.0
+     --conf spark.driver.cores="300m"
+     --conf spark.dynamicAllocation.enabled=true
+     --conf spark.shuffle.service.enabled=true
+     --conf spark.kubernetes.shuffle.namespace=default
+     --conf spark.kubernetes.shuffle.labels="app=spark-shuffle-service,spark-version=2.2.0"
+     --conf spark.dynamicAllocation.initialExecutors=0
+     --conf spark.dynamicAllocation.minExecutors=1
+     --conf spark.dynamicAllocation.maxExecutors=5
+```
