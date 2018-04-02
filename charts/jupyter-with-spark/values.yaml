@@ -6,7 +6,7 @@ replicaCount: 1
 image:
   repository: snappydatainc/jupyter-notebook
   tag: 5.2.2-spark-v2.2.0-kubernetes-0.5.1
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 jupyterService:
   type: LoadBalancer
@@ -25,7 +25,7 @@ mountSecrets: false
 sparkEventLog:
   enableHistoryEvents: false
   # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
-  eventLogDir: "gs://spark_history_server_testing/"
+  eventLogDir: "gs://spark-history-server-store/"
 
 persistence:
   enabled: false

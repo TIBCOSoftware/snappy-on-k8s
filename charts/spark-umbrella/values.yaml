@@ -29,7 +29,7 @@ zeppelin:
   sparkEventLog:
     enableHistoryEvents: false
     # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
-    eventLogDir: "gs://spark_history_server_testing/"
+    eventLogDir: "gs://spark-history-server-store/"
   noteBookStorage:
     usePVForNoteBooks: true
     # If using PV for notebook storage, 'notebookDir' will be an
@@ -74,7 +74,8 @@ jupyter:
   sparkEventLog:
     enableHistoryEvents: false
     # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
-    eventLogDir: "gs://spark_history_server_testing/"
+    eventLogDir: "gs://spark-history-server-store/"
+    # Also, edit conf/spark/spark-defaults.conf to specify the keyfile for Google Cloud service account.
 
   persistence:
     enabled: true
@@ -101,12 +102,12 @@ jupyter:
     #  memory: 128Mi
 
 # configuration for Spark History Server
-historyServer:
+historyserver:
   # whether to enable history server
   enabled: false
   historyServerConf:
     # URI of the GCS bucket
-    eventsDir: "gs://spark_history_server_testing/"
+    eventsDir: "gs://spark-history-server-store/"
 
     # sparkonk8s-test.json is name of the keyfile to access GCS bucket got history log.
     # Change it to reflect name of your key file. Key file will always be in path /etc/secret

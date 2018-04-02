@@ -35,6 +35,7 @@ For example in values.yaml of [spark-k8s-zeppelin chart](https://github.com/Snap
      --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
      --conf spark.driver.cores="300m"
+     --conf spark.local.dir=/tmp/spark-local
      --conf spark.dynamicAllocation.enabled=true
      --conf spark.shuffle.service.enabled=true
      --conf spark.kubernetes.shuffle.namespace=default

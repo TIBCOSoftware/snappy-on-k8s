@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .Release.Name }}-hs-secrets
+  name: history-secrets
 type: Opaque
 data:
 {{ (.Files.Glob "conf/secrets/*").AsSecrets | indent 2 }}

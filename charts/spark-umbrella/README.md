@@ -25,13 +25,13 @@ the respective components. A user can configure each subchart in parent chart's
   ```
 
 3. Modify the  `values.yaml` file. Specify the following required attributes for history server configuration
-    1. historyServer.historyServerConf.eventsDir: specify the GCS bucket path from which the history 
+    1. historyserver.historyServerConf.eventsDir: specify the GCS bucket path from which the history 
     server will read logs. For example:
     ```
       historyServerConf:
-        eventsDir: "gs://spark_history_server_testing/"
+        eventsDir: "gs://spark-history-server-store/"
     ```
-    2. historyServer.environment: configure SPARK_HISTORY_OPTS to specify the JSON key file. JSON key file will 
+    2. historyserver.environment: configure SPARK_HISTORY_OPTS to specify the JSON key file. JSON key file will 
     be available in path /etc/secrets of the pod. For example:
      ```
      environment:
@@ -49,7 +49,7 @@ the respective components. A user can configure each subchart in parent chart's
             --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
        sparkEventLog:
          enableHistoryEvents: true
-         eventLogDir: "gs://spark_history_server_testing/"
+         eventLogDir: "gs://spark-history-server-store/"
      ```
      4. For Jupyter notebook server, you can enable history logging by setting sparkEventLog.enableHistoryEvents to true.
      ```python
