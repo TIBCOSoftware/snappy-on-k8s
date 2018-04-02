@@ -1,6 +1,11 @@
-#parent values.yaml
+##################
+# Configure Zeppelin, Jupyter, History server, Spark resource staging and Spark shuffle service here. 
+# This umbrella chart configuration overrides the values.yaml in the sub-charts
+##################
 
-# global attributes for umbrella chart
+##################
+# GLOBAL ATTRIBUTES FOR UMBRELLA CHART
+##################
 global:
   mountSecrets: true
   mountSparkConf: true
@@ -10,7 +15,9 @@ global:
   # internal attribute. Do not change
   umbrellaChart: true
 
-# configuration for Zeppelin environment
+##################
+# CONFIGURATION FOR ZEPPELIN ENVIRONMENT
+##################
 zeppelin:
   # whether to enable Zeppelin
   enabled: true
@@ -63,7 +70,9 @@ zeppelin:
     #  cpu: 100m
     #  memory: 128Mi
 
-# configuration for Jupyter notebook environment
+##################
+# CONFIGURATION FOR JUPYTER NOTEBOOK ENVIRONMENT
+##################
 jupyter:
   # Set false to exclude launching Jupyter notebook server with this Helm chart.
   enabled: true
@@ -101,7 +110,9 @@ jupyter:
     #  cpu: 100m
     #  memory: 128Mi
 
-# configuration for Spark History Server
+##################
+# CONFIGURATION FOR SPARK HISTORY SERVER
+##################
 historyserver:
   # whether to enable history server
   enabled: false
@@ -122,7 +133,9 @@ historyserver:
     #  cpu: 100m
     #  memory: 128Mi
 
+##################
 # configuration for Spark Resource Staging Server
+##################
 rss:
   # properties that can be made available via configmap
   properties:
@@ -135,7 +148,9 @@ resources: {}
 #    cpu: 100m
 #    memory: 256Mi
 
+##################
 # configuration for Spark Shuffle Service
+##################
 shuffle:
   shufflePodLabels:
     app: spark-shuffle-service
