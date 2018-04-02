@@ -41,9 +41,9 @@ We showcase the use of cloud storage (e.g. Google Cloud Storage) to manage logs/
 volumes within the charts make the architecture portable across clouds. 
 
 ## Pre-requisites and assumptions:
-- We need a running kubernetes or PKS cluster. We only support Kubernetes 1.9 (or higher) and PKS 1.0.1(or higher). If 
-you already have access to a Kubernetes cluster skip the next section. 
+- We need a running kubernetes or PKS cluster. We only support Kubernetes 1.9 (or higher) and PKS 1.0.0(or higher).
 
+ **NOTE** If you already have access to a Kubernetes cluster, jump to the [next section](#steps-if-a-kubernetes-cluster-is-available).
 
 ### Getting access to a PKS or Kubernetes cluster
 If you would like to deploy on-prem you can either use Minikube (local developer machine) or get PKS environment setup 
@@ -74,8 +74,10 @@ instuctions for setting up Google Cloud SDK ('gcloud') along with kubectl
 [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 - You must have appropriate permissions to list, create, edit and delete pods in your cluster. You can verify that you 
 can list these resources by running kubectl auth can-i <list|create|edit|delete> pods.
-- The service account credentials used by the driver pods must be allowed to create pods, services and configmaps.
+- The service account credentials used by the driver pods must be allowed to create pods, services and configmaps. More details [here](#configuring-service-account).
+<!--- TODO Why is this required?
 - You must have Kubernetes DNS configured in your cluster.
+--->
 
 
 ### Setup Helm charts
@@ -123,6 +125,8 @@ Once everything is up and running you will see something like this:
 ```text
 NAME                              TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)           AGE
 kubernetes                        ClusterIP      10.63.240.1     <none>          443/TCP           1d
+spark-all-jupyter-notebook-ui     LoadBalancer   10.63.246.130   35.184.71.164   8888:31540/TCP    9m
+spark-all-jupyter-spark-web-ui    LoadBalancer   10.63.246.140   23.251.149.136  4040:31810/TCP    9m
 spark-all-rss                     LoadBalancer   10.63.246.190   35.192.235.35   10000:31000/TCP   9m
 spark-all-zeppelin                LoadBalancer   10.63.254.150   35.192.68.147   8080:30522/TCP    9m
 spark-all-zeppelin-spark-web-ui   LoadBalancer   10.63.253.49    35.188.92.84    4040:32276/TCP    9m
@@ -384,6 +388,7 @@ In the above example, the specific Kubernetes cluster can be used with spark sub
 Note that applications can currently only be executed in cluster mode, where the driver and its executors are running on
 the cluster.
 
+#### Configuring Service Account
 When Kubernetes [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) is enabled,
 the `default` service account used by the driver may not have appropriate pod `edit` permissions
 for launching executor pods. We recommend to add another service account, say `spark`, with
