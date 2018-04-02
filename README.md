@@ -217,7 +217,7 @@ and associate it with your GCP project.
     gsutil iam ch serviceAccount:${ACCOUNT_NAME}@${GCP_PROJECT_ID}.iam.gserviceaccount.com:objectAdmin gs://spark-history-server-store
     ```
 In order for history server to be able read from the GCS bucket, we need to mount the json key file on the history 
-server pod. Copy the json file into 'conf/secrets' directory for umbrella chart. The chart 
+server pod. Copy the json file into 'conf/secrets' directory for umbrella chart.
 
 ```text
 cp sparkonk8s-test.json spark-umbrella/conf/secrets/
@@ -235,7 +235,6 @@ historyserver:
     # URI of the GCS bucket
     eventsDir: "gs://spark-history-server-store"
 ```
->TODO: Also, we need to configure secrets?
 
 Next, set the SPARK_HISTORY_OPTS so that history server uses json key file while accessing the GCS bucket
 ```text
