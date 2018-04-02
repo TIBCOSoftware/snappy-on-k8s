@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "jupyter-with-spark.fullname" . }}
+  name: {{ .Release.Name }}-jupyter-notebook-ui
   labels:
     app: {{ template "jupyter-with-spark.name" . }}
     chart: {{ template "jupyter-with-spark.chart" . }}
@@ -21,7 +21,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: spark-web-ui
+  name: {{ .Release.Name }}-jupyter-spark-web-ui
   labels:
     app: {{ template "jupyter-with-spark.name" . }}
     chart: {{ template "jupyter-with-spark.chart" . }}

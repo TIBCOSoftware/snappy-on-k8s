@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: shirishd
-  tag: spark-shuffle:v2.2.0-kubernetes-0.5.0
+  repository: snappydatainc
+  tag: spark-shuffle:v2.2.0-kubernetes-0.5.1
   pullPolicy: IfNotPresent
 
 shufflePodLabels:

@@ -3,13 +3,18 @@ dependencies:
   - name: spark-hs
     repository: file://../spark-hs
     version: 0.1.0
-    alias: historyServer
-    condition: historyServer.enabled
+    alias: historyserver
+    condition: historyserver.enabled
   - name:  spark-k8s-zeppelin-chart
     repository: file://../spark-k8s-zeppelin-chart
     version: 0.1.0
     alias: zeppelin
     condition: zeppelin.enabled
+  - name:  jupyter-with-spark
+    repository: file://../jupyter-with-spark
+    version: 0.1.0
+    alias: jupyter
+    condition: jupyter.enabled
   - name:  spark-rss
     repository: file://../spark-rss
     version: 0.1.0

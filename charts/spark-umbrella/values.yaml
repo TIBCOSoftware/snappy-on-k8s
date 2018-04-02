@@ -5,6 +5,7 @@ global:
   mountSecrets: true
   mountSparkConf: true
   mountZeppelinConf: true
+  mountJupyterConf: true
   serviceAccount: default
   # internal attribute. Do not change
   umbrellaChart: true
@@ -21,14 +22,14 @@ zeppelin:
   environment:
     SPARK_SUBMIT_OPTIONS: >-
        --kubernetes-namespace default
-       --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0
-       --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0
+       --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
+       --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
        --conf spark.executor.instances=2
 #       --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
   sparkEventLog:
     enableHistoryEvents: false
     # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
-    eventLogDir: "gs://spark_history_server_testing/"
+    eventLogDir: "gs://spark-history-server-store/"
   noteBookStorage:
     usePVForNoteBooks: true
     # If using PV for notebook storage, 'notebookDir' will be an
@@ -62,13 +63,51 @@ zeppelin:
     #  cpu: 100m
     #  memory: 128Mi
 
+# configuration for Jupyter notebook environment
+jupyter:
+  # Set false to exclude launching Jupyter notebook server with this Helm chart.
+  enabled: true
+
+  # If using PV for notebook storage, provide absolute path starting with /data/ in jupyter conf file
+  # using 'c.NotebookApp.notebook_dir'. See jupyter_notebook_config.py.template
+
+  sparkEventLog:
+    enableHistoryEvents: false
+    # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
+    eventLogDir: "gs://spark-history-server-store/"
+    # Also, edit conf/spark/spark-defaults.conf to specify the keyfile for Google Cloud service account.
+
+  persistence:
+    enabled: true
+    ## If 'existingClaim' is defined, PVC must be created manually before
+    ## volume will be bound
+    # existingClaim:
+
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, Azure & OpenStack)
+    ##
+    # storageClass: "-"
+    accessMode: ReadWriteOnce
+    size: 6Gi
+
+  resources: {}
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    # requests:
+    #  cpu: 100m
+    #  memory: 128Mi
+
 # configuration for Spark History Server
-historyServer:
+historyserver:
   # whether to enable history server
   enabled: false
   historyServerConf:
     # URI of the GCS bucket
-    eventsDir: "gs://spark_history_server_testing/"
+    eventsDir: "gs://spark-history-server-store/"
 
     # sparkonk8s-test.json is name of the keyfile to access GCS bucket got history log.
     # Change it to reflect name of your key file. Key file will always be in path /etc/secret

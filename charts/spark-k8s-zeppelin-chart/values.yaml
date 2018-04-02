@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: shirishd
-  tag: zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.0
+  repository: snappydatainc
+  tag: zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.1
   pullPolicy: IfNotPresent
 
 zeppelinService:
@@ -25,17 +25,17 @@ environment:
   # Provide configuration parameters, use syntax as expected by spark-submit
   SPARK_SUBMIT_OPTIONS: >-
      --kubernetes-namespace default
-     --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0
-     --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0
+     --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
+     --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
      --conf spark.executor.instances=2
 #     --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
 
 sparkEventLog:
   enableHistoryEvents: false
   # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
-  eventLogDir: "gs://spark_history_server_testing/"
+  eventLogDir: "gs://spark-history-server-store/"
 
-# if mountSecrets is set to true files in 'secrets' directory will be mounted
+# if mountSecrets is set to true files in 'conf/secrets' directory will be mounted
 # on path '/etc/secrets' as secrets
 mountSecrets: false
 

@@ -62,9 +62,9 @@ Given below is an example spark-submit command that uses resource staging server
       --kubernetes-namespace default \
       --conf spark.executor.instances=5 \
       --conf spark.app.name=spark-pi \
-      --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0-kubernetes-0.5.0 \
-      --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0-kubernetes-0.5.0 \
-      --conf spark.kubernetes.initcontainer.docker.image=shirishd/spark-init:v2.2.0-kubernetes-0.5.0 \
+      --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 \
+      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1 \
+      --conf spark.kubernetes.initcontainer.docker.image=snappydatainc/spark-init:v2.2.0-kubernetes-0.5.1 \
       --conf spark.kubernetes.resourceStagingServer.uri=<URI of resource staging server as displayed on console while deploying it> \
       ./examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar
     

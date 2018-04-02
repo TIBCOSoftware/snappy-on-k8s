@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: shirishd
-  tag: spark-init:v2.2.0-kubernetes-0.5.0
+  repository: snappydatainc
+  tag: spark-init:v2.2.0-kubernetes-0.5.1
   pullPolicy: IfNotPresent
 
 service:
@@ -18,7 +18,7 @@ serviceAccount: default
 historyServerConf:
   # if using file system, this should be an absolute path in the mounted volume
   # if not using file system, mention HDFS compatible URI
-  eventsDir: "gs://spark_history_server_testing/"
+  eventsDir: "gs://spark-history-server-store/"
   #eventsDir: "/"
 
   # to use a file system path for Spark events dir, set 'enablePVC' to true and mention the
@@ -27,7 +27,7 @@ historyServerConf:
   enablePVC: false
   existingClaimName: "claim"
 
-# copy your key file in 'secrets' directory and set mountSecrets to true
+# copy your key file in 'conf/secrets' directory and set mountSecrets to true
 # key file will be mounted on '/etc/secrets'
 mountSecrets: true
 

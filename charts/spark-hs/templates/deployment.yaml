@@ -76,7 +76,7 @@ spec:
         {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
         - name: secrets-volume
           secret:
-            secretName: {{ .Release.Name }}-hs-secrets
+            secretName: history-secrets
         {{- end }}
         - name: data
         {{- if .Values.historyServerConf.enablePVC }}

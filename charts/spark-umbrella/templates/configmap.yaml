@@ -1,0 +1,63 @@
+{{- if .Values.global.mountSecrets }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: history-secrets
+type: Opaque
+data:
+{{ (.Files.Glob "conf/secrets/*").AsSecrets | indent 2 }}
+{{- end }}
+---
+{{- if .Values.global.mountZeppelinConf }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-zeppelin-configmap
+data:
+{{ (.Files.Glob "conf/zeppelin/*").AsConfig | indent 2 }}
+{{- end }}
+---
+{{- if .Values.global.mountJupyterConf }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-jupyter-configmap
+data:
+{{ (.Files.Glob "conf/jupyter/*").AsConfig | indent 2 }}
+{{- end }}
+---
+{{- if .Values.global.mountSparkConf }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-zpspark-configmap
+data:
+{{ (.Files.Glob "conf/spark/*").AsConfig | indent 2 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-jp-spark-configmap
+data:
+{{ (.Files.Glob "conf/spark/*").AsConfig | indent 2 }}
+{{- end }}
+---
+{{- if .Values.global.mountSecrets }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-zp-secrets
+type: Opaque
+data:
+{{ (.Files.Glob "conf/secrets/*").AsSecrets | indent 2 }}
+{{- end }}
+---
+{{- if .Values.global.mountSecrets }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-jp-secrets
+type: Opaque
+data:
+{{ (.Files.Glob "conf/secrets/*").AsSecrets | indent 2 }}
+{{- end }}
