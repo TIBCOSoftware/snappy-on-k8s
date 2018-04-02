@@ -103,10 +103,10 @@ each of the individual subchart's 'values.yaml' file. The umbrella chart's 'valu
 git clone https://github.com/SnappyDataInc/spark-on-k8s
 
 # Get the subcharts required by the umbrella chart
+cd charts
 helm dep up zeppelin-spark-umbrella
 
 # Now, install the chart
-cd charts
 helm install --name spark-all ./zeppelin-spark-umbrella/
 ```
 The above command will deploy the helm chart and will display instructions to access Zeppelin service and Spark UI.
@@ -135,7 +135,7 @@ data' paragraph followed by one or more SQL paragraphs.
 
 #### Launch the kubernetes dashboard
 > You can launch the Kubernetes dashboard (If using GCP you can get to the dashboard from the GCP console) to inspect the 
-various deployed objects, associated pods and login the containers to get a better sense for what is going on
+various deployed objects, associated pods and even connect to a running container.
 ```text
 # To launch the dashboard, do this ... We use a proxy to access the dashboard locally ...
 kubectl proxy
