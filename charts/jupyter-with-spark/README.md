@@ -46,7 +46,7 @@ To enable event logging for the spark application which you would launch via Jup
 
    ```python
    # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
-   eventLogDir: "gs://my_bucket_name/event_logs/"
+   eventLogDir: "gs://spark-history-server-store/"
    ```
 
    3. Uncomment the line in conf/spark/spark-defaults.conf to specify the keyfile for accessing your GCS bucket.
@@ -93,7 +93,7 @@ See spark-defaults.conf under conf/spark/ directory of the chart for more detail
 ```python
 spark = SparkSession.builder.config("spark.app.name", "spark-pi")\
       .config("spark.kubernetes.namespace", "dev-namespace")\
-      .config("spark.executor.instances", "5")\
+      .config("spark.executor.instances", "2")\
       .getOrCreate()
 ```
 
