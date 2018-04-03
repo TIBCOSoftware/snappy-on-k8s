@@ -1,17 +1,17 @@
 # Multi cloud Spark application service on PKS
 
 ## Introduction
-[Kubernetes](kubernetes.io) is an open source project designed specifically for container orchestration. 
+[Kubernetes](https://kubernetes.io/) is an open source project designed specifically for container orchestration. 
 Kubernetes offers a number of key [features](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/), 
 including multiple storage APIs, container health checks, manual or automatic scaling, rolling upgrades and 
 service discovery.
 [Pivotal Container Service - PKS](https://pivotal.io/platform/pivotal-container-service) is a solution to manage 
-Kubernetes clusters across private and public clouds. It leverages [BOSH]() to offer a uniform way to instantiate, 
+Kubernetes clusters across private and public clouds. It leverages [BOSH](https://bosh.io/) to offer a uniform way to instantiate, 
 deploy, and manage highly available Kubernetes clusters on a cloud platform like GCP, VMWare vSphere or AWS. 
 
 This project provides a streamlined way of deploying, scaling and managing Spark applications. Spark 2.3 added support
 for Kubernetes as a cluster manager. This project leverages [Helm charts](https://helm.sh/) to allow deployment of 
-common Spark application recipes - using [Apache Zeppelin](https://zeppelin.apache.org/) and/or [Jupyter](jupyter.org) 
+common Spark application recipes - using [Apache Zeppelin](https://zeppelin.apache.org/) and/or [Jupyter](https://jupyter.org/) 
 for interactive, collaborative workloads. It also automates logging of all events across batch jobs and Notebook driven
 applications to log events to shared storage for offline analysis.   
 
@@ -56,7 +56,7 @@ using vSphere.
 [here](https://docs.pivotal.io/runtimes/pks/1-0/using.html)
 
 #### Option (2) - Kubernetes on Google Cloud Platform (GCP)
-- Login to your Google account and goto the [Cloud console](console.cloud.google.com) to launch a GKE cluster
+- Login to your Google account and goto the [Cloud console](https://console.cloud.google.com/) to launch a GKE cluster
 
 #### Option (3) - Minikube on your local machine
 - If either of the above options is difficult, you may setup a test cluster on your local machine using 
@@ -343,7 +343,7 @@ more about helm architecture [here](https://docs.helm.sh/architecture/).
 
 
 In our case, when the umbrella chart is deployed, it launches the Notebook server pod(s) and the History server. We also 
-start headless ['Service'](https://kubernetes.io/docs/concepts/services-networking/service/) objects opening endpoints 
+start [Headless Service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services) objects opening endpoints 
 so Notebook servers and the history server UI is accessible from outside kubernetes. 
 When a notebook Spark paragraph is executed, the notebook server launches a 'in-cluster client' Spark driver within the 
 same pod as the notebook server. The driver is automatically configured to use the k8s master as the cluster manager. 
@@ -404,7 +404,7 @@ the spark-submit command line above to specify the service account to use.
 
 Application dependencies that are being submitted from your machine need to be sent to a **resource staging server**
 that the driver and executor can then communicate with to retrieve those dependencies. The umbrella chart described in 
-[quickstart](#Quickstart) deploys resource staging server.  The command below shows how usage of resource staging
+[quickstart](#quickstart) deploys resource staging server.  The command below shows how usage of resource staging
 server to specify jar for spark-examples. This jar will be copied from you local machine to the resource staging server
 which will make it available to the Spark driver and executors during job execution.
 
@@ -442,7 +442,7 @@ when there is demand. This feature is particularly useful if multiple applicatio
 
 Spark on Kubernetes supports Dynamic Allocation. This mode requires running an external shuffle 
 service. This is typically a daemonset with a provisioned hostpath volume. This shuffle service may be shared by 
-executors belonging to different SparkJobs. The umbrella chart described in [quickstart](#Quickstart) deploys 
+executors belonging to different SparkJobs. The umbrella chart described in [quickstart](#quickstart) deploys 
 shuffle service daemonset.
 
 Spark application can target a particular shuffle service based on the labels assigned to the pods in the shuffle 
