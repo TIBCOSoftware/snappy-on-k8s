@@ -442,7 +442,7 @@ when there is demand. This feature is particularly useful if multiple applicatio
 
 Spark on Kubernetes supports Dynamic Allocation. This mode requires running an external shuffle 
 service. This is typically a daemonset with a provisioned hostpath volume. This shuffle service may be shared by 
-executors belonging to different SparkJobs. The umbrella chart described in [quickstart](#Quickstart) deploys 
+executors belonging to different SparkJobs. The umbrella chart described in [quickstart](#quickstart) deploys 
 shuffle service daemonset.
 
 Spark application can target a particular shuffle service based on the labels assigned to the pods in the shuffle 
