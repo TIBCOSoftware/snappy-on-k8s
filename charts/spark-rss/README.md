@@ -75,3 +75,28 @@ Use `helm delete` command to delete the chart
    ```
    $ helm delete --purge rss
    ```
+   
+## Configuration
+The following table lists the configuration parameters available for this chart
+
+| Parameter               | Description                        | Default                                                    |
+| ----------------------- | ---------------------------------- | ---------------------------------------------------------- |
+| `replicaCount`          |  No of replicas of Resource Staging Server |     `1`                                            |
+| `image.repository`      |  Docker repo for the image         |     `SnappyDataInc`                                        |
+| `image.tag`             |  Tag for the Docker image          |     `spark-resource-staging-server:v2.2.0-kubernetes-0.5.1`        | 
+| `image.pullPolicy`      |  Pull policy for the image         |     `IfNotPresent`                                         |
+| `service.type`  |  K8S service type for Resource Staging Server     |     `LoadBalancer`                                  |
+| `service.externalPort`  |  Port exposed externally for Resource Staging Server service         |      `10000`              |
+| `service.internalPort`  |  Port exposed only internally for the pod so that LoadBalancer can connect to it  |      `10000` |
+| `service.nodePort`  |  Used if the service is of NodePort type  |      `310000` |
+| `serviceAccount`        |  Service account used to deploy Resource Staging Server |     `default`                                    |
+| `properties`    | Configuration properties for Resource Staging Server. These will be made available as configmaps |  |
+| `resources`           | CPU and Memory resources for the RSS pod  | |
+| `global.umbrellaChart` | Internal attribute. Do not modify | `false` | 
+
+These configuration attributes can be set in the `values.yaml` file or while using the helm install command, for example,
+
+```
+# set an attribute while using helm install command
+helm install --name rss --set serviceAccount=spark ./spark-rss
+```

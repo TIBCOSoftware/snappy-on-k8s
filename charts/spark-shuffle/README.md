@@ -44,4 +44,24 @@ For example in values.yaml of [spark-k8s-zeppelin chart](https://github.com/Snap
      --conf spark.dynamicAllocation.minExecutors=1
      --conf spark.dynamicAllocation.maxExecutors=5
 ```
+
+## Configuration
+The following table lists the configuration parameters available for this chart
+
+| Parameter               | Description                        | Default                                                    |
+| ----------------------- | ---------------------------------- | ---------------------------------------------------------- |
+| `image.repository`      |  Docker repo for the shuffle service image         |     `SnappyDataInc`                        |
+| `image.tag`             |  Tag for the Docker image          |     `spark-shuffle:v2.2.0-kubernetes-0.5.1`        | 
+| `image.pullPolicy`      |  Pull policy for the image         |     `IfNotPresent`                                 |
+| `serviceAccount`        |  Service account used to deploy shuffle service daemonset |     `default`               |
+| `shufflePodLabels` | Labels assigned to pods of the shuffle service. These can be used to target a particular service while running jobs. By default two labels are created `app: spark-shuffle-service` and `spark-version: 2.2.0`| |
+| `resources`           | CPU and Memory resources for the RSS pod  | |
+| `global.umbrellaChart` | Internal attribute. Do not modify | `false` | 
+
+These configuration attributes can be set in the `values.yaml` file or while using the helm install command, for example, 
+
+```
+# set an attribute while using helm install command
+helm install --name shuffle --set serviceAccount=spark ./spark-shuffle
+```
   

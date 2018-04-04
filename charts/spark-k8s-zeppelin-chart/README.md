@@ -73,7 +73,6 @@ NOTE: Below command will work ONLY after a Spark job is launched. Run a Spark No
 ```
 Use the URL printed by the above command to access Spark UI.
 
-## Configuration
 ### Enabling Spark event logging for history server
 By default, Zeppelin chart does not enable Spark event logging. Users can enable Spark event logging to view job 
 details in the history server UI by configuring the chart by following the steps given below. Users can log Spark events to any HDFS compatible system (GCS/S3/HDFS etc.). 
@@ -115,6 +114,40 @@ Here we list steps to configure Spark event logging on Google Cloud Storage
 After following the steps as given above, Spark will log job events to the GCS bucket 'gs://spark-history-server/'. You may use the
 [Spark History Server UI](https://github.com/SnappyDataInc/spark-on-k8s/tree/master/charts/spark-hs) to view details of jobs.
 
+## Configuration
+The following table lists the configuration parameters available for this chart
 
+| Parameter               | Description                        | Default                                                    |
+| ----------------------- | ---------------------------------- | ---------------------------------------------------------- |
+| `replicaCount`          |  No of replicas of Zeppelin server |     `1`                                                    |
+| `image.repository`      |  Docker repo for the image         |     `SnappyDataInc`                                        |
+| `image.tag`             |  Tag for the Docker image          |     `zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.0`         | 
+| `image.pullPolicy`      |  Pull policy for the image         |     `IfNotPresent`                                         |
+| `zeppelinService.type`  |  K8S service type for Zeppelin     |     `LoadBalancer`                                         |
+| `zeppelinService.port`  |  Port for Zeppelin service         |      `8080`                                                |
+| `sparkWebUI.type`       |  K8S service type for for Spark UI |     `LoadBalancer`                                         |
+| `sparkWebUI.port`       |  Port for Spark service                          |     `4040`                                   |
+| `serviceAccount`        |  Service account used to deploy Zeppelin and run Spark jobs |     `default`                                    |
+| `environment`           |  Environment variables that need to be defined in containers. For example, those required by Spark and Zeppelin |        |
+| `environment.SPARK_SUBMIT_OPTIONS` | Configuration options for spark-submit, used by Zeppelin while running Spark jobs | |
+| `sparkEventLog.enableHistoryEvents` | Whether to enable Spark event logging, required by History server |  `false` |
+| `sparkEventLog.eventLogDir` | URL of the GCS bucket where Spark event logs will be written | |
+| `mountSecrets` | If true, files in 'secrets' directory will be mounted on path /etc/secrets | `false` |   |
+| `noteBookStorage.usePVForNoteBooks` | Whether to use persistent volume to store notebooks | `true`|
+| `noteBookStorage.notebookDir` | Absoluter path on the mounted persistent volume where notebooks will be stored | `/notebooks` |
+| `persistence.enabled` | Whether to mount a persistent volume | `true` |
+| `persistence.existingClaim` | An existing PVC to be used while mounting a PV. If this is not specified a dynamic PV will be created and a PVC will be generated for it | - |
+| `persistence.storageClass`  | Storage class to be used for creating a PVC, if an `existingClaim` is not specified. If unspecified default will be chosen. Ignored if `persistence.existingClaim` is specified | |
+| `persistence.accessMode`    | Access mode for the dynamically generated PV and its PVC. Ignored if `persistence.existingClaim` is specified | `ReadWriteOnce`|
+| `persistence.size`    | Size of the dynamically generated PV and its PVC. Ignored if `persistence.existingClaim` is specified | 8Gi |
+| `resources`           | CPU and Memory resources for the Zeppelin pod  | |
+| `global.umbrellaChart` | Internal attribute. Do not modify | `false` | 
+
+These configuration attributes can be set in the `values.yaml` file or while using the helm install command, for example, 
+
+```
+# set an attribute while using helm install command
+helm install --name zeppelin --set serviceAccount=spark ./spark-k8s-zeppelin-chart
+```
 
 
