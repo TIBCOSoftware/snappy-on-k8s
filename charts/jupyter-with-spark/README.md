@@ -1,15 +1,14 @@
-This chart is work-in-progress
 
 # A Helm chart for Jupyter notebook environment with Spark-on-k8s binaries
 
 ## Chart Details
 
-* This chart launches Jupyter pod and exposes Jupyter as a service on port 8888.
-  * You can provide configurations for Jupyter notebook by placing your jupiter_notebook_config.py under conf/jupyter directory of this chart.
+* This chart launches Jupyter notebook server pod and exposes Jupyter notebook as a service on port 8888.
+  * You can provide configurations for Jupyter notebook by placing your jupiter_notebook_config.py under [conf/jupyter](conf/jupyter) directory of this chart.
 * Also, you can run your PySpark applications from the Jupyter notebook environment by explicitly creating SparkContext.
   * This launches your Spark cluster in in-cluster client mode. The in-cluster client mode means that the submission environment is within a kubernetes cluster.
-  * You can place your spark-defaults.conf under conf/spark/ directory of this chart which will be used to configure the Spark cluster.
-  * A basic spark-defaults.conf is provided which specifies the docker images from SnappyData, Inc and few other defaults.
+  * You can configure your Spark cluster by providing your custom spark-defaults.conf under [conf/spark/](conf/spark) directory of this chart.
+  * A basic [spark-defaults.conf](conf/spark/spark-defaults.conf) is provided which specifies the docker images from SnappyData, Inc. and few other defaults.
   * This chart uses docker images built with spark-on-k8s binaries after applying patch for [PR#456](https://github.com/apache-spark-on-k8s/spark/pull/456) as the changes for it are not yet merged in [spark-on-k8s](https://github.com/apache-spark-on-k8s/spark) project.
 
 ## Installing the Chart
@@ -49,7 +48,7 @@ To enable event logging for the spark application which you would launch via Jup
    eventLogDir: "gs://spark-history-server-store/"
    ```
 
-   3. Uncomment the line in conf/spark/spark-defaults.conf to specify the keyfile for accessing your GCS bucket.
+   3. Specify name of your keyfile for accessing your GCS bucket in conf/spark/spark-defaults.conf
 
    **NOTE:** You should only update the name of your keyfile, retaining its path to be /etc/secrets/.
 
