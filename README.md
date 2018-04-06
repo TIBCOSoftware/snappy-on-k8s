@@ -485,3 +485,18 @@ SPARK_SUBMIT_OPTIONS accordingly. For example,
      --conf spark.dynamicAllocation.minExecutors=1
      --conf spark.dynamicAllocation.maxExecutors=5
 ```
+### Configuring subcharts 
+
+You can configure the components in the umbrella chart's 'values.yaml' (see spark-umbrella/values.yaml). 
+
+Detailed description of various attributes can be found internal readme of the respective subcharts. The links for which 
+are given below
+
+- [Zeppelin](charts/spark-k8s-zeppelin-chart/README.md#chart-configuration)
+- [Jupyter](charts/jupyter-with-spark/README.md)
+- [Spark History Server](charts/spark-hs/README.md#configuration)
+- [Shuffle Service](charts/spark-shuffle/README.md#configuration)
+- [Resource Staging Server](charts/spark-rss/README.md#configuration)
+
+
+ 
