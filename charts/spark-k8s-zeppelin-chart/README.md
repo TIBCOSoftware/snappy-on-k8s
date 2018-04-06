@@ -114,7 +114,137 @@ Here we list steps to configure Spark event logging on Google Cloud Storage
 After following the steps as given above, Spark will log job events to the GCS bucket 'gs://spark-history-server/'. You may use the
 [Spark History Server UI](https://github.com/SnappyDataInc/spark-on-k8s/tree/master/charts/spark-hs) to view details of jobs.
 
-## Configuration
+## Chart Configuration
+
+This section describes various configuration options for the Spark Zeppelin chart. 
+
+### Configuring Persistent Volumes
+
+[Persistent volume](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) can be used to store stateful 
+data of an application. For example, users can configure directory for notebook storage, directory for Zeppelin logs 
+etc. on persistent volume. By default, this chart [dynamically provisions persistent volume](https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/)
+using default storage provisioner. Users can provide `storageClass`, `accessMode` and `size` attributes in `values.yaml` 
+file
+>Note: This dynamically provisioned volume is deleted by the helm chart when the chart is deleted
+
+Instead of using a dynamically provisioned persistent volume, users can specify persistent volume claim(PVC) for 
+an already provisioned volume such as NFS based persistent volume. This can be done by modifying the 
+`persistent.existingClaim` attribute.
+
+```
+persistence:
+  enabled: true
+  ## If 'existingClaim' is defined, PVC must be created manually before
+  ## volume will be bound
+  existingClaim: nfsPVC
+```
+
+In the above example, an existing PVC named 'nfsPVC' has been used. This PVC should be created manually before the 
+chart is deployed. A persistent volume corresponding to this persistent volume claim will be bound to the pod.
+ 
+>Note: A persistent volume is mounted on the `/data` folder of the Pod. Also setting 'persistence.enabled' to false will
+disable provisioning of persistent volume
+
+### Configuring Notebook Storage
+
+Notebook storage directory can be configured by modifying `values.yaml` file. If `noteBookStorage.usePVForNoteBooks`
+is set to true, notebooks will be stored on a persistent volume in the path specified by `noteBookStorage.notebookDir` 
+attribute
+
+```
+noteBookStorage:
+  usePVForNoteBooks: true
+  # If using PV for notebook storage, 'notebookDir' will be an
+  # absolute path in the mounted persistent volume
+  notebookDir: "/notebooks"
+```
+
+
+### Configuring Zeppelin
+
+Users can modify the interpreter options by using Zeppelin UI once the Zeppelin service is started. In addition, this 
+chart provides two ways to specify Zeppelin properties. Full list of Zeppelin properties can be found in Zeppelin 
+[documentation](https://zeppelin.apache.org/docs/0.7.0/install/configuration.html#zeppelin-properties).
+
+#### Using environment variables
+
+Users may specify environment variables for Zeppelin configuration in `values.yaml` file by providing those 
+variables in the `environment` section.  For example, 
+
+
+```
+# Any environment variables that need to be made available to the container are defined here
+# This may include environment variables used by Spark, Zeppelin
+environment:
+  # Provide configuration parameters, use syntax as expected by spark-submit
+  SPARK_SUBMIT_OPTIONS: >-
+     --kubernetes-namespace default
+     --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
+     --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
+     --conf spark.executor.instances=2
+  ZEPPELIN_LOG_DIR: /data/logs
+```
+
+In the above example, two environment variables SPARK_SUBMIT_OPTIONS and ZEPPELIN_LOG_DIR used by Zeppelin have been 
+configured. The chart will define environment variables in the Zeppelin pod using Kubernetes config maps. 
+
+#### Using configuration files
+
+Another way to configure Zeppelin properties is by specifying Zeppelin configuration files. These files
+can be saved in `conf/zeppelin` directory of the chart. Files saved in this directory are mounted on the pod in Zeppelin's 
+`conf` folder. 
+
+For example, if a user wants to configure log4j properties, user can modify the log4.properties file in the `conf/zeppelin`
+folder. This file will be mounted on the pod and Zeppelin will use the modified properties. Other configuration 
+property files can also be specified in the same folder (such as shiro.ini, zeppelin-env.sh). For convenience, template files 
+have been provided in the `conf/zeppelin` directory. Users can copy and use these files for configuration.
+```
+# copy the template file
+cp conf/zeppelin/zeppelin-env.sh.template conf/zeppelin/zeppelin-env.sh
+# now modify the zeppelin-env.sh
+```
+
+### Configuring Spark Jobs
+Users can modify the interpreter options by using Zeppelin UI once the Zeppelin service is started. This chart provides 
+two ways to specify Spark properties. Full list of Spark properties can be found in Spark documentation
+
+#### Using environment variables
+
+Users may specify environment variables for Spark configuration in `values.yaml` file by providing those variables in 
+the `environment` section.  For example,
+
+```
+# Any environment variables that need to be made available to the container are defined here
+# This may include environment variables used by Spark, Zeppelin
+environment:
+  # Provide configuration parameters, use syntax as expected by spark-submit
+  SPARK_SUBMIT_OPTIONS: >-
+     --kubernetes-namespace default
+     --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
+     --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
+     --conf spark.executor.instances=2
+```
+In the above example, environment variable SPARK_SUBMIT_OPTIONS used by Zeppelin to configure Spark jobs has been 
+provided. The chart will define environment variables in the Zeppelin pod using Kubernetes config maps. 
+
+#### Using configuration files
+
+Another way to configure Spark properties is by specifying Spark configuration files. These files
+can be saved in `conf/spark` directory of the chart. Files saved in this directory are mounted on the pod in Spark's 
+conf folder. 
+
+For example, if a user wants to configure log4j properties, user can provide the `log4.properties` file in the `conf/spark`
+folder. This file will be mounted on the pod and Zeppelin will use the modified properties. Other configuration 
+property files can also be specified in the same folder (such as spark-defaults.conf, spark-env.sh). For convenience, 
+template files have been provided in the `conf/spark` directory. Users can copy and use these files for configuration.
+
+```
+# copy the template file
+cp conf/spark/log4j.properties.template conf/spark/log4j.properties
+# now modify the zeppelin-env.sh
+```
+
+## Configuration Properties List
 The following table lists the configuration parameters available for this chart
 
 | Parameter               | Description                        | Default                                                    |
@@ -136,7 +266,7 @@ The following table lists the configuration parameters available for this chart
 | `noteBookStorage.usePVForNoteBooks` | Whether to use persistent volume to store notebooks | `true`|
 | `noteBookStorage.notebookDir` | Absoluter path on the mounted persistent volume where notebooks will be stored | `/notebooks` |
 | `persistence.enabled` | Whether to mount a persistent volume | `true` |
-| `persistence.existingClaim` | An existing PVC to be used while mounting a PV. If this is not specified a dynamic PV will be created and a PVC will be generated for it | - |
+| `persistence.existingClaim` | An existing PVC to be used while mounting a PV. If this is not specified a dynamic PV will be created and a PVC will be generated for it |  |
 | `persistence.storageClass`  | Storage class to be used for creating a PVC, if an `existingClaim` is not specified. If unspecified default will be chosen. Ignored if `persistence.existingClaim` is specified | |
 | `persistence.accessMode`    | Access mode for the dynamically generated PV and its PVC. Ignored if `persistence.existingClaim` is specified | `ReadWriteOnce`|
 | `persistence.size`    | Size of the dynamically generated PV and its PVC. Ignored if `persistence.existingClaim` is specified | 8Gi |
@@ -149,5 +279,4 @@ These configuration attributes can be set in the `values.yaml` file or while usi
 # set an attribute while using helm install command
 helm install --name zeppelin --set serviceAccount=spark ./spark-k8s-zeppelin-chart
 ```
-
-
+ 
