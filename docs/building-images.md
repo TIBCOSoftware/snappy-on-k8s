@@ -1,11 +1,13 @@
 
-# Prerequisites
+# Building and publishing Docker images
+
+## Prerequisites
 
 You should have Docker installed on your local setup from where you would want to build and publish the Docker images.
 
 Refer to [this page](https://docs.docker.com/install) to get information about installing Docker.
 
-# Spark Images
+## Spark Images
 
 The binaries used to build the Spark images are based on the [spark-on-k8s](https://github.com/apache-spark-on-k8s/spark) project, with few additional changes.
 These have been committed into a clone of branch-2.2-kubernetes branch in above repository, and is available as a branch in SnappyData's fork of Apache Spark.
@@ -48,7 +50,7 @@ Password: <password>
 $ ./sbin/build-push-docker-images.sh -r <your-docker-repo-name> -t <image-tag> push
 ```
 
-# Jupyter Image
+## Jupyter Image
 
 This image will contain the Spark binaries you built above apart from the dependencies needed for Jupyter Notebook server.
 
@@ -69,7 +71,7 @@ $ docker build -t snappydatainc/jupyter-notebook:5.2.2-spark-v2.2.0-kubernetes-0
 $ docker push snappydatainc/jupyter-notebook:5.2.2-spark-v2.2.0-kubernetes-0.5.1
 ```
 
-# Zeppelin Image
+## Zeppelin Image
 
 This image will contain the Spark binaries built earlier apart from the dependencies needed for launching Apache Zeppelin server.
 

@@ -1,5 +1,5 @@
 
-# A Helm chart for Jupyter notebook environment with Spark-on-k8s binaries
+# A Helm chart for Jupyter notebook enabled Spark cluster
 
 ## Chart Details
 
@@ -53,7 +53,7 @@ To enable event logging for the spark application which you would launch via Jup
    **NOTE:** You should only update the name of your keyfile, retaining its path to be /etc/secrets/.
 
    ```python
-   # Uncomment below line and replace sparkonk8s-test.json with the actual name of your keyfile
+   # Replace bucket-access-key.json with the actual name of your keyfile
    # to enable access to Google Cloud Storage.
    spark.hadoop.google.cloud.auth.service.account.json.keyfile   /etc/secrets/bucket-access-key.json
    ```
@@ -78,7 +78,7 @@ jupyterService:
 
 **NOTE**: if you set a new password via conf/jupyter/jupyter_notebook_config.py, it'll still be overridden by what you specify in values.yaml.
 
-# Running Spark application via notebook 
+## Running Spark application via notebook 
 Create a new notebook based on Python 2 and launch a Spark cluster by creating SparkContext.
 
 ```python
@@ -87,7 +87,7 @@ spark = SparkSession.builder.config("spark.app.name", "spark-pi")\
       .getOrCreate()
 ```
 Note that, other spark configurations like `spark.master`, `spark.submit.deployMode`, docker image names for driver and executor pods, kubernetes namespace are already set for you.
-See spark-defaults.conf under conf/spark/ directory of the chart for more details. You can also override the conf properties or set new ones in the notebook.
+See [spark-defaults.conf](conf/spark/spark-defaults.conf) under conf/spark/ directory of the chart for more details. You can also override the conf properties or set new ones in the notebook.
 
 ```python
 spark = SparkSession.builder.config("spark.app.name", "spark-pi")\
@@ -97,16 +97,16 @@ spark = SparkSession.builder.config("spark.app.name", "spark-pi")\
 ```
 
 You can change the default Spark UI port from 4040 to something else in the notebook, either by updating it in the [values.yml](values.yaml) under `sparkWebUI` attribute 
-or using `--set sparkWebUI.port=<new-port>` when invoking `helm install ...`.
+or while installing the chart as `helm install --name jupyter --set sparkWebUI.port=5050 ./spark-on-k8s/charts/jupyter-with-spark/`.
 
-Once SparkContext is created in the notebook, Spark UI URL can be obtained by using commands displayed by `helm install`:
+Once you create SparkContext in your Jupyter notebook, you can access the Spark UI via the URL obtained by running below commands (displayed by `helm install`):
 
 ```bash
    $ export SPARK_UI_SERVICE_IP=$(kubectl get svc --namespace default jupyter-jupyter-spark-web-ui -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
    $ echo http://$SPARK_UI_SERVICE_IP:4040
 ```
 
-A sample Spark job to calculate the value of Pi is given below.
+A sample Spark job to calculate the value of Pi is given below which you can try running in your Jupyter notebook.
 
 ```python
 from __future__ import print_function
@@ -135,3 +135,37 @@ def f(_):
 count = spark.sparkContext.parallelize(range(1, n + 1), partitions).map(f).reduce(add)
 print("Pi is roughly %f" % (4.0 * count / n))
 ```
+
+## Configuration Properties List
+   The following table lists the configuration parameters available for this chart. You can modify these in [values.yaml](values.yaml).
+   
+   | Parameter               | Description                           | Default                                     |
+   | ----------------------- | ------------------------------------- | ------------------------------------------- |
+   | `replicaCount`          |  Number of replicas of Jupyter server |     `1`                                     |
+   | `image.repository`      |  Docker repo/name for the image       |     `SnappyDataInc/jupyter-notebook`        |
+   | `image.tag`             |  Tag for the Docker image             |     `5.2.2-spark-v2.2.0-kubernetes-0.5.1`   | 
+   | `image.pullPolicy`      |  Pull policy for the image            |     `IfNotPresent`                          |
+   | `jupyterService.type`   |  K8S service type for Jupyter server  |     `LoadBalancer`                          |
+   | `jupyterService.port`   |  Port for Jupyter notebook service    |     `8080`                                  |
+   | `sparkWebUI.type`       |  K8S service type for for Spark UI    |     `LoadBalancer`                          |
+   | `sparkWebUI.port`       |  Port for Spark service               |     `4040`                                  |
+   | `serviceAccount`        |  Service account used to deploy Jupyter and run Spark jobs |     `default`          |
+   | `sparkEventLog.enableHistoryEvents` | Whether to enable Spark event logging, required by History server |  `false` |
+   | `sparkEventLog.eventLogDir` | URL of the GCS bucket where Spark event logs will be written | |
+   | `mountSecrets`          | If true, files in 'secrets' directory will be mounted on path /etc/secrets | `false` |   |
+   | `persistence.enabled`   | Whether to mount a persistent volume  | `true` |
+   | `persistence.existingClaim` | An existing PVC to be used while mounting a PV. If this is not specified a dynamic PV will be created and a PVC will be generated for it |  |
+   | `persistence.storageClass`  | Storage class to be used for creating a PVC, if an `existingClaim` is not specified. If unspecified default will be chosen. Ignored if `persistence.existingClaim` is specified | |
+   | `persistence.accessMode`    | Access mode for the dynamically generated PV and its PVC. Ignored if `persistence.existingClaim` is specified | `ReadWriteOnce`|
+   | `persistence.size`      | Size of the dynamically generated PV and its PVC. Ignored if `persistence.existingClaim` is specified | 8Gi |
+   | `resources`             | CPU and Memory resources for the Jupyter pod  | |
+   | `global.umbrellaChart`  | Internal attribute. Do not modify.    | `false` | 
+   
+
+   You can also set these attributes with the helm install command.
+   
+   For example: 
+   ```
+   # set an attribute while using helm install command
+   helm install --name jupyter --set serviceAccount=spark ./jupyter-with-spark
+   ```

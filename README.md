@@ -73,7 +73,7 @@ kubectl [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/). If you 
 instuctions for setting up Google Cloud SDK ('gcloud') along with kubectl 
 [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 - You must have appropriate permissions to list, create, edit and delete pods in your cluster. You can verify that you 
-can list these resources by running kubectl auth can-i <list|create|edit|delete> pods.
+can list these resources by running `kubectl auth can-i <list|create|edit|delete> pods`.
 - The service account credentials used by the driver pods must be allowed to create pods, services and configmaps. More details [here](#configuring-service-account).
 <!--- TODO Why is this required?
 - You must have Kubernetes DNS configured in your cluster.
@@ -97,14 +97,14 @@ on Kubernetes. This chart is composed from individual sub-charts for each of the
 You can read more about Helm umbrella charts 
 [here](https://github.com/kubernetes/helm/blob/master/docs/charts_tips_and_tricks.md#complex-charts-with-many-dependencies)
 
-You can configure the components in the umbrella chart's 'values.yaml' (see spark-umbrella/values.yaml) or in 
-each of the individual subchart's 'values.yaml' file. The umbrella chart's 'values.yaml' will override the component one.
+You can configure the components in the umbrella chart's 'values.yaml' (see [spark-umbrella/values.yaml](charts/spark-umbrella/values.yaml)) or in
+each of the individual sub-chart's 'values.yaml' file. The umbrella chart's 'values.yaml' will override the ones in sub-charts.
 
 ```text
 # fetch the chart repo ....
 git clone https://github.com/SnappyDataInc/spark-on-k8s
 
-# Get the subcharts required by the umbrella chart
+# Get the sub-charts required by the umbrella chart
 cd charts
 helm dep up spark-umbrella
 
@@ -485,15 +485,15 @@ SPARK_SUBMIT_OPTIONS accordingly. For example,
      --conf spark.dynamicAllocation.minExecutors=1
      --conf spark.dynamicAllocation.maxExecutors=5
 ```
-### Configuring subcharts 
+### Configuring sub-charts
 
-You can configure the components in the umbrella chart's 'values.yaml' (see spark-umbrella/values.yaml). 
+You can configure the components in the umbrella chart's [values.yaml](charts/spark-umbrella/values.yaml). 
 
-Detailed description of various attributes can be found internal readme of the respective subcharts. The links for which 
-are given below
+Detailed description of various attributes can be found in internal readme of the respective sub-charts. The links for which
+are given below.
 
 - [Zeppelin](charts/spark-k8s-zeppelin-chart/README.md#chart-configuration)
-- [Jupyter](charts/jupyter-with-spark/README.md)
+- [Jupyter](charts/jupyter-with-spark/README.md#configuration-properties-list)
 - [Spark History Server](charts/spark-hs/README.md#configuration)
 - [Shuffle Service](charts/spark-shuffle/README.md#configuration)
 - [Resource Staging Server](charts/spark-rss/README.md#configuration)
