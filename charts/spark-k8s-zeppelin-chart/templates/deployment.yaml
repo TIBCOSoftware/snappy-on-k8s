@@ -34,6 +34,8 @@ spec:
             - "/bin/bash"
             - "-c"
             - >
+              cp /spark_conf/* /opt/spark/conf;
+              cp /zeppelin_conf/* /zeppelin/conf;
               export MASTER=k8s://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT;
               if [ "$usePVForNoteBooks" == "true" ]; then
                 export ZEPPELIN_NOTEBOOK_DIR="/data/$notebookDir"
@@ -79,9 +81,9 @@ spec:
           - name: data
             mountPath: /data/
           - name: zeppelin-config-properties
-            mountPath: /zeppelin/conf
+            mountPath: /zeppelin_conf
           - name: spark-config-properties
-            mountPath: /opt/spark/conf
+            mountPath: /spark_conf
           {{- if or .Values.mountSecrets .Values.global.mountSecrets }}
           - name: secrets-volume
             mountPath: /etc/secrets
