@@ -10,7 +10,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: snappydata-locator-external
+  name: snappydata-locator
   labels:
     app: snappydata
 spec:
@@ -19,24 +19,6 @@ spec:
     targetPort: 1527
     name: jdbc
   type: LoadBalancer
-  selector:
-    app: snappydata-locator
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: snappydata-locator
-  labels:
-    app: snappydata
-spec:
-  ports:
-  - port: 10334
-    targetPort: 10334
-    name: locator
-  - port: 1527
-    targetPort: 1527
-    name: jdbc
-  clusterIP: None
   selector:
     app: snappydata-locator
 ---
@@ -57,21 +39,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: snappydata-server-external
-  labels:
-    app: snappydata
-spec:
-  ports:
-  - port: 1527
-    targetPort: 1527
-    name: jdbc
-  type: LoadBalancer
-  selector:
-    app: snappydata-server
----
-apiVersion: v1
-kind: Service
-metadata:
   name: snappydata-server
   labels:
     app: snappydata
@@ -80,24 +47,9 @@ spec:
   - port: 1527
     targetPort: 1527
     name: jdbc
-  clusterIP: None
-  selector:
-    app: snappydata-server
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: snappydata-ui
-  labels:
-    app: snappydata
-spec:
-  ports:
-  - port: 5050
-    targetPort: 5050
-    name: spark
   type: LoadBalancer
   selector:
-    app: snappydata-leader
+    app: snappydata-server
 ---
 apiVersion: v1
 kind: Service
@@ -110,7 +62,7 @@ spec:
   - port: 5050
     targetPort: 5050
     name: spark
-  clusterIP: None
+  type: LoadBalancer
   selector:
     app: snappydata-leader
 ---
