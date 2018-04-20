@@ -65,7 +65,6 @@ spec:
   type: LoadBalancer
   selector:
     app: snappydata-leader
-
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -84,7 +83,7 @@ spec:
     spec:
       containers:
       - name: snappydata-locator
-        image: snappydatainc/snappydata:1.0.0
+        image: snappydatainc/snappydata:1.0.1
         imagePullPolicy: IfNotPresent
         resources:
           requests:
@@ -104,22 +103,11 @@ spec:
           - "/bin/bash"
           - "-c"
           - >
-            cat /etc/passwd > /tmp/passwd;
-            echo "$(id -u):x:$(id -u):$(id -g):dynamic uid:/opt/snappydata:/bin/false" >> /tmp/passwd;
-
-            export NSS_WRAPPER_PASSWD=/tmp/passwd;
-            export NSS_WRAPPER_GROUP=/etc/group;
-            export LD_PRELOAD=/usr/lib64/libnss_wrapper.so;
-
-            echo "starting sshd service";
-            service sshd start;
-
-            hname=`hostname`;
-            workdir="/opt/snappydata/work/$hname";
-            mkdir -p "$workdir";
-            echo "$hname  -dir=$workdir" > /opt/snappydata/conf/locators;
-            /opt/snappydata/sbin/snappy-locators.sh start;
-            tail -f /dev/null;
+            yum -y -q install wget; yum clean all -y;
+            rm -f start;
+            wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
+            chmod 744 start;
+            /opt/snappydata/start locator;
         lifecycle:
           preStop:
             exec:
@@ -159,7 +147,7 @@ spec:
     spec:
       containers:
       - name: snappydata-server
-        image: snappydatainc/snappydata:1.0.0
+        image: snappydatainc/snappydata:1.0.1
         imagePullPolicy: IfNotPresent
         resources:
           requests:
@@ -179,32 +167,11 @@ spec:
           - "/bin/bash"
           - "-c"
           - >
-            yum -y install nc && yum clean all -y;
-
-            COUNTER=0;
-            while ! nc -z snappydata-locator-internal 10334 > /dev/null 2>&1; do
-              echo "Waiting for locator to be online";
-              sleep 5;
-              let COUNTER=COUNTER+1 ;
-              if [ $COUNTER -eq 50 ]; then echo "ERROR: Locator is not up"; exit 1; fi;
-            done;
-
-            cat /etc/passwd > /tmp/passwd;
-            echo "$(id -u):x:$(id -u):$(id -g):dynamic uid:/opt/snappydata:/bin/false" >> /tmp/passwd;
-
-            export NSS_WRAPPER_PASSWD=/tmp/passwd;
-            export NSS_WRAPPER_GROUP=/etc/group;
-            export LD_PRELOAD=/usr/lib64/libnss_wrapper.so;
-
-            echo "starting sshd service";
-            service sshd start;
-
-            hname=`hostname`;
-            workdir="/opt/snappydata/work/$hname";
-            mkdir -p "$workdir";
-            echo "$hname -locators=snappydata-locator-internal:10334 -client-port=1527 -dir=$workdir" > /opt/snappydata/conf/servers;
-            /opt/snappydata/sbin/snappy-servers.sh start;
-            tail -f /dev/null;
+            yum -y install nc wget && yum clean all -y;
+            rm -f start;
+            wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
+            chmod 744 start;
+            /opt/snappydata/start server -locators=snappydata-locator-internal:10334;
         lifecycle:
           preStop:
             exec:
@@ -244,7 +211,7 @@ spec:
     spec:
       containers:
       - name: snappydata-leader
-        image: snappydatainc/snappydata:1.0.0
+        image: snappydatainc/snappydata:1.0.1
         imagePullPolicy: IfNotPresent
         resources:
           requests:
@@ -263,32 +230,11 @@ spec:
           - "/bin/bash"
           - "-c"
           - >
-            yum -y install nc && yum clean all -y;
-
-            COUNTER=0;
-            while ! nc -z snappydata-server 1527 > /dev/null 2>&1; do
-              echo "Waiting for servers to be online";
-              sleep 5;
-              let COUNTER=COUNTER+1 ;
-              if [ $COUNTER -eq 50 ]; then echo "ERROR: Servers are not up"; exit 1; fi;
-            done;
-
-            cat /etc/passwd > /tmp/passwd;
-            echo "$(id -u):x:$(id -u):$(id -g):dynamic uid:/opt/snappydata:/bin/false" >> /tmp/passwd;
-
-            export NSS_WRAPPER_PASSWD=/tmp/passwd;
-            export NSS_WRAPPER_GROUP=/etc/group;
-            export LD_PRELOAD=/usr/lib64/libnss_wrapper.so;
-
-            echo "starting sshd service";
-            service sshd start;
-
-            hname=`hostname`;
-            workdir="/opt/snappydata/work/$hname";
-            mkdir -p "$workdir";
-            echo "$hname -locators=snappydata-locator-internal:10334 -dir=$workdir" > /opt/snappydata/conf/leads;
-            /opt/snappydata/sbin/snappy-leads.sh start;
-            tail -f /dev/null;
+            yum -y install nc wget && yum clean all -y;
+            rm -f start;
+            wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
+            chmod 744 start;
+            /opt/snappydata/start lead -locators=snappydata-locator-internal:10334;
         lifecycle:
           preStop:
             exec:
