@@ -10,7 +10,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: snappydata-locator
+  name: snappydata-locator-public
   labels:
     app: snappydata
 spec:
@@ -39,7 +39,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: snappydata-server
+  name: snappydata-server-public
   labels:
     app: snappydata
 spec:
@@ -54,7 +54,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: snappydata-leader
+  name: snappydata-ui
   labels:
     app: snappydata
 spec:
@@ -66,6 +66,64 @@ spec:
   selector:
     app: snappydata-leader
 ---
+
+
+####################
+# Headless services
+####################
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-locator
+  labels:
+    app: snappydata
+spec:
+  ports:
+  - port: 10334
+    targetPort: 10334
+    name: locator
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  clusterIP: None
+  selector:
+    app: snappydata-locator
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-server
+  labels:
+    app: snappydata
+spec:
+  ports:
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  clusterIP: None
+  selector:
+    app: snappydata-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-leader
+  labels:
+    app: snappydata
+spec:
+  ports:
+  - port: 5050
+    targetPort: 5050
+    name: spark
+  clusterIP: None
+  selector:
+    app: snappydata-leader
+---
+
+
+#############################
+# Statefulset for locators
+#############################
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -130,6 +188,9 @@ spec:
 
 
 ---
+#############################
+# Statefulset for servers
+#############################
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -194,6 +255,9 @@ spec:
 
 
 ---
+#############################
+# Statefulset for leaders
+#############################
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
