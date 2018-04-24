@@ -70,11 +70,16 @@ We recommend 3 CPUs and 4g of memory to be able to start a simple Spark applicat
 [here](https://docs.pivotal.io/runtimes/pks/1-0/installing-pks-cli.html)
 - Install kubectl on your local development machine and configure access to the kubernetes/PKS cluster. See instructions for 
 kubectl [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/). If you are using Google cloud, you will find 
-instuctions for setting up Google Cloud SDK ('gcloud') along with kubectl 
+instructions for setting up Google Cloud SDK ('gcloud') along with kubectl 
 [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 - You must have appropriate permissions to list, create, edit and delete pods in your cluster. You can verify that you 
 can list these resources by running `kubectl auth can-i <list|create|edit|delete> pods`.
-- The service account credentials used by the driver pods must be allowed to create pods, services and configmaps. More details [here](#configuring-service-account).
+- The service account credentials used by the driver pods must be allowed to create pods, services and configmaps. For example, if you are using `default` 
+service account, assign 'edit' role to it by using following command
+
+```text
+kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:default --namespace=default
+```
 <!--- TODO Why is this required?
 - You must have Kubernetes DNS configured in your cluster.
 --->
@@ -343,8 +348,8 @@ more about helm architecture [here](https://docs.helm.sh/architecture/).
 
 
 In our case, when the umbrella chart is deployed, it launches the Notebook server pod(s) and the History server. We also 
-start [Headless Service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services) objects opening endpoints 
-so Notebook servers and the history server UI is accessible from outside kubernetes. 
+create [LoadBalancer service](https://kubernetes.io/docs/concepts/services-networking/service/#type-loadbalancer) objects opening endpoints 
+so Notebook servers and the history server UI is accessible from outside Kubernetes. 
 When a notebook Spark paragraph is executed, the notebook server launches a 'in-cluster client' Spark driver within the 
 same pod as the notebook server. The driver is automatically configured to use the k8s master as the cluster manager. 
 K8s then launches the executor pods. All these Pods use the configured storage to write Spark events to a shared folder 
@@ -397,8 +402,10 @@ the necessary privilege. For example:
     kubectl create clusterrolebinding spark-edit --clusterrole edit  \
         --serviceaccount default:spark --namespace default
 
-With this, one can add `--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark` to
-the spark-submit command line above to specify the service account to use.
+One can then modify `global` section in values.yaml file to specify the service account to use. 
+
+    global:
+      serviceAccount: spark
 
 ### Dependency Management
 
