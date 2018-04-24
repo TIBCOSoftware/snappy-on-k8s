@@ -165,7 +165,7 @@ spec:
             rm -f start;
             wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
             chmod 744 start;
-            /opt/snappydata/start locator;
+            /opt/snappydata/start locator --get-ip snappydata-locator-public;
         lifecycle:
           preStop:
             exec:
@@ -232,7 +232,7 @@ spec:
             rm -f start;
             wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
             chmod 744 start;
-            /opt/snappydata/start server -locators=snappydata-locator-internal:10334;
+            /opt/snappydata/start server --get-ip snappydata-server-public --wait-for snappydata-locator-internal 10334 -locators=snappydata-locator-internal:10334;
         lifecycle:
           preStop:
             exec:
@@ -298,7 +298,7 @@ spec:
             rm -f start;
             wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
             chmod 744 start;
-            /opt/snappydata/start lead -locators=snappydata-locator-internal:10334;
+            /opt/snappydata/start lead --get-ip snappydata-ui --wait-for snappydata-server-public 1527 -locators=snappydata-locator-internal:10334;
         lifecycle:
           preStop:
             exec:
