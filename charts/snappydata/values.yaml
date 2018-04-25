@@ -1,0 +1,46 @@
+# Default values for snappydata.
+# This is a YAML-formatted file.
+
+image:
+  repository: snappydatainc/snappydata
+  tag: 1.0.1
+  pullPolicy: IfNotPresent
+
+locators:
+  replicaCount: 1
+  conf: ""
+  resources:
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    requests:
+    #  cpu: 100m
+      memory: 1024Mi
+
+servers:
+  replicaCount: 2
+  conf: ""
+  resources:
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    requests:
+    #  cpu: 100m
+      memory: 4096Mi
+
+leaders:
+  replicaCount: 1
+  conf: ""
+  resources:
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    requests:
+    #  cpu: 100m
+      memory: 4096Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

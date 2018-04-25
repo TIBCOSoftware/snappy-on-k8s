@@ -1,0 +1,82 @@
+#############################
+# Statefulset for locators
+#############################
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "{{ .Release.Name }}-locator"
+#  TODO: Do we need to change, for example like the one given below?
+#  name: {{ template "snappydata.fullname" . }}
+  labels:
+    app: {{ template "snappydata.name" . }}
+    chart: {{ template "snappydata.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  serviceName: "{{ .Release.Name }}-locator"
+  replicas: {{ .Values.locators.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: "{{ .Release.Name }}-locator"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Release.Name }}-locator"
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: "{{ .Release.Name }}-locator"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 10334
+          name: locator
+        - containerPort: 1527
+          name: jdbc
+     # primitive liveness probe .. only useful when the JVM crashes
+        livenessProbe:
+          tcpSocket:
+            port: 1527
+          initialDelaySeconds: 80
+        command:
+          - "/bin/bash"
+          - "-c"
+          - >
+            yum -y -q install wget; yum clean all -y;
+            rm -f start;
+            wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
+            chmod 744 start;
+            /opt/snappydata/start locator;
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/opt/snappydata/sbin/snappy-locators.sh", "stop"]
+        resources:
+{{ toYaml .Values.locators.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+        volumeMounts:
+        - mountPath: "/opt/snappydata/work"
+          name: snappy-disk-claim
+
+  volumeClaimTemplates:
+  - metadata:
+      name: snappy-disk-claim
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: standard
+# A PV claim using 'standard' storage class. Will work only in Google container engine.
+# In other clouds, create a PV and assign storageClassName ...
