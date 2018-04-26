@@ -492,6 +492,73 @@ SPARK_SUBMIT_OPTIONS accordingly. For example,
      --conf spark.dynamicAllocation.minExecutors=1
      --conf spark.dynamicAllocation.maxExecutors=5
 ```
+
+### Persistent Volume configuration for charts
+
+By default, this chart will provision volumes(PV) dynamically for Jupyter and Zeppelin. These PVs can be used for notebook
+storage. When the Helm chart is deleted, the volume claims and PVs are not deleted. This allows users to reuse the 
+persistent volume claim, if the chart is deployed again. A user can specify the name of the already created PVC in 
+the `persistence.existingClaim` field of the Zeppelin/Jupyter configuration when the chart is deployed again.
+
+For example, if you deploy the umbrella chart as follows:
+```
+  helm install --name spark-all ./spark-umbrella
+```
+This deployment will create two PVCs and dynamically provision volumes for those.
+
+```
+  $ kubectl get pvc
+  NAME                                     STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+  spark-all-jupyter                        Bound     pvc-4dc8dbc2-4931-11e8-86bc-42010a800173   6Gi        RWO            standard       2m
+  spark-all-zeppelin                       Bound     pvc-4dc9b4cd-4931-11e8-86bc-42010a800173   8Gi        RWO            standard       2m
+
+```
+
+When the deployment is deleted, following message will be shown, indicating that the PVC has not been removed
+
+```
+  $ helm delete --purge spark-all
+  These resources were kept due to the resource policy:
+  [PersistentVolumeClaim] spark-all-zeppelin
+  [PersistentVolumeClaim] spark-all-jupyter
+
+  release "spark-all" deleted
+```
+
+To reuse these PVCs in the subsequent deployment, modify the `persistence.existingClaim` field in `values.yaml`
+
+For example
+
+```
+  zeppelin:
+    persistence:
+      existingClaim: spark-all-zeppelin
+```  
+
+Similarly for Jupyter
+
+```
+  jupyter:
+    persistence:
+      existingClaim: spark-all-jupyter
+```
+
+Deploy the umbrella chart again and the same volumes will be bound again:
+```
+  helm install --name spark-all ./spark-umbrella
+```
+
+Note that if you do not specify the `persistence.existingClaim` fields and the PVC already exists, the chart will error out
+
+```
+  $ helm install --name spark-all ./spark-umbrella/
+  Error: release spark-all failed: persistentvolumeclaims "spark-all-jupyter" already exists
+```
+
+>Note: A user can specify a manually created persistent volume claim(PVC) in the `persistence.existingClaim` field. This is useful
+if one wants to use an existing PVC instead of provisioning a new volume dynamically thru chart.
+
+
 ### Configuring sub-charts
 
 You can configure the components in the umbrella chart's [values.yaml](charts/spark-umbrella/values.yaml). 

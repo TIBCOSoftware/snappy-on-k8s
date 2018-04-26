@@ -43,6 +43,8 @@ persistence:
   # storageClass: "-"
   accessMode: ReadWriteOnce
   size: 6Gi
+  # Whether to keep the PVC when chart is deleted, if PV is dynamically provisioned
+  keepResource: true
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious

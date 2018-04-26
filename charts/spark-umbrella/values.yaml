@@ -28,7 +28,6 @@ zeppelin:
   # Change it to reflect name of your key file. Key file will always be in path /etc/secrets
   environment:
     SPARK_SUBMIT_OPTIONS: >-
-       --kubernetes-namespace default
        --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
        --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
        --conf spark.executor.instances=2
@@ -61,6 +60,8 @@ zeppelin:
     # storageClass: "-"
     accessMode: ReadWriteOnce
     size: 8Gi
+    # Whether to keep the PVC when chart is deleted, if PV is dynamically provisioned
+    keepResource: true
 
   resources: {}
     # limits:
@@ -101,6 +102,8 @@ jupyter:
     # storageClass: "-"
     accessMode: ReadWriteOnce
     size: 6Gi
+    # Whether to keep the PVC when chart is deleted, if PV is dynamically provisioned
+    keepResource: true
 
   resources: {}
     # limits:
