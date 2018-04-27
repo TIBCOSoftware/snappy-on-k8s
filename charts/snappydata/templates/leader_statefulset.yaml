@@ -45,7 +45,13 @@ spec:
             rm -f start;
             wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
             chmod 744 start;
-            /opt/snappydata/start lead --get-ip {{ .Release.Name }}-ui --wait-for {{ .Release.Name }}-server-public 1527 -locators={{ .Release.Name }}-locator-internal:10334;
+
+            WAIT_FOR_SERVICE_ARG="--get-ip {{ .Release.Name }}-ui --wait-for {{ .Release.Name }}-server-public 1527";
+            USER_PROVIDED_STARTUP_CONF={{ .Values.servers.conf | default "" }};
+            SNAPPY_STARTUP_CONF="-locators={{ .Release.Name }}-locator-internal:10334 $USER_PROVIDED_STARTUP_CONF";
+            echo "Executing command: /opt/snappydata/start lead $WAIT_FOR_SERVICE_ARG $SNAPPY_STARTUP_CONF";
+
+            /opt/snappydata/start lead $WAIT_FOR_SERVICE_ARG $SNAPPY_STARTUP_CONF;
         lifecycle:
           preStop:
             exec:
@@ -72,10 +78,10 @@ spec:
   - metadata:
       name: snappy-disk-claim
     spec:
-      accessModes: [ "ReadWriteOnce" ]
+      accessModes: [ {{ .Values.leaders.persistence.accessMode | quote }} ]
       resources:
         requests:
-          storage: 10Gi
-      storageClassName: standard
-# A PV claim using 'standard' storage class. Will work only in Google container engine.
-# In other clouds, create a PV and assign storageClassName ...
+          storage: {{ .Values.leaders.persistence.size | quote }}
+{{- if .Values.leaders.persistence.storageClass }}
+      storageClassName: {{ .Values.leaders.persistence.storageClass | quote }}
+{{- end }}

@@ -46,7 +46,8 @@ spec:
             rm -f start;
             wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
             chmod 744 start;
-            /opt/snappydata/start locator;
+            SNAPPY_STARTUP_CONF={{ .Values.locators.conf | default "" }};
+            /opt/snappydata/start locator $SNAPPY_STARTUP_CONF;
         lifecycle:
           preStop:
             exec:
@@ -73,10 +74,10 @@ spec:
   - metadata:
       name: snappy-disk-claim
     spec:
-      accessModes: [ "ReadWriteOnce" ]
+      accessModes: [ {{ .Values.locators.persistence.accessMode | quote }} ]
       resources:
         requests:
-          storage: 10Gi
-      storageClassName: standard
-# A PV claim using 'standard' storage class. Will work only in Google container engine.
-# In other clouds, create a PV and assign storageClassName ...
+          storage: {{ .Values.locators.persistence.size | quote }}
+{{- if .Values.locators.persistence.storageClass }}
+      storageClassName: {{ .Values.locators.persistence.storageClass | quote }}
+{{- end }}

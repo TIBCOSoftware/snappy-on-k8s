@@ -8,6 +8,7 @@ image:
 
 locators:
   replicaCount: 1
+  ## config options for locators
   conf: ""
   resources:
     # limits:
@@ -16,9 +17,20 @@ locators:
     requests:
     #  cpu: 100m
       memory: 1024Mi
+  ## PV configuration
+  persistence:
+    ## Use 'storageClass' to specify the storageClassName to be used while dynamically provisioning volumes
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, Azure & OpenStack)
+    ##
+    # storageClass:
+    accessMode: ReadWriteOnce
+    size: 10Gi
 
 servers:
   replicaCount: 2
+  ## config options for servers
   conf: ""
   resources:
     # limits:
@@ -27,9 +39,20 @@ servers:
     requests:
     #  cpu: 100m
       memory: 4096Mi
+  ## PV configuration
+  persistence:
+    ## Use 'storageClass' to specify the storageClassName to be used while dynamically provisioning volumes
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, Azure & OpenStack)
+    ##
+    # storageClass:
+    accessMode: ReadWriteOnce
+    size: 10Gi
 
 leaders:
   replicaCount: 1
+  ## config options for leaders
   conf: ""
   resources:
     # limits:
@@ -38,6 +61,16 @@ leaders:
     requests:
     #  cpu: 100m
       memory: 4096Mi
+  ## PV configuration
+  persistence:
+    ## Use 'storageClass' to specify the storageClassName to be used while dynamically provisioning volumes
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, Azure & OpenStack)
+    ##
+    # storageClass:
+    accessMode: ReadWriteOnce
+    size: 10Gi
 
 nodeSelector: {}
 
