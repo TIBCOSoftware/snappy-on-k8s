@@ -24,7 +24,6 @@ serviceAccount: default
 environment:
   # Provide configuration parameters, use syntax as expected by spark-submit
   SPARK_SUBMIT_OPTIONS: >-
-     --kubernetes-namespace default
      --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
      --conf spark.executor.instances=2
@@ -63,6 +62,8 @@ persistence:
   # storageClass: "-"
   accessMode: ReadWriteOnce
   size: 8Gi
+  # Whether to keep the PVC when chart is deleted, if PV is dynamically provisioned
+  keepResource: true
 
 resources: {}
   # limits:

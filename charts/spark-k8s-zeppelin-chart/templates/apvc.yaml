@@ -8,8 +8,10 @@ metadata:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
-#  annotations:
-#    "helm.sh/resource-policy": {{ default "keep" .Values.resourcePolicy }}
+{{- if .Values.persistence.keepResource }}
+  annotations:
+    "helm.sh/resource-policy": keep
+{{- end }}
 spec:
   accessModes:
     - {{ .Values.persistence.accessMode | quote }}
