@@ -37,7 +37,7 @@ spec:
           tcpSocket:
             port: 1527
 #         initial delay intentionally kept large, as server waits(250 seconds) for locator to be available
-          initialDelaySeconds: 360
+          initialDelaySeconds: {{ .Values.servers.initialDelaySeconds | default 360 }}
         command:
           - "/bin/bash"
           - "-c"

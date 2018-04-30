@@ -37,7 +37,7 @@ spec:
         livenessProbe:
           tcpSocket:
             port: 1527
-          initialDelaySeconds: 80
+          initialDelaySeconds: {{ .Values.locators.initialDelaySeconds | default 80 }}
         command:
           - "/bin/bash"
           - "-c"
