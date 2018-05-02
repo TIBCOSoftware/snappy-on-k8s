@@ -44,10 +44,11 @@ spec:
             rm -f start;
             wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
             chmod 744 start;
+            cp /snappy_conf/* /opt/snappydata/conf;
 
-            WAIT_FOR_SERVICE_ARG="--get-ip {{ .Release.Name }}-ui --wait-for {{ .Release.Name }}-server-public 1527";
+            WAIT_FOR_SERVICE_ARG="--get-ip {{ .Release.Name }}-ui --wait-for {{ .Release.Name }}-server 1527";
             USER_PROVIDED_STARTUP_CONF={{ .Values.servers.conf | default "" }};
-            SNAPPY_STARTUP_CONF="-locators={{ .Release.Name }}-locator-internal:10334 $USER_PROVIDED_STARTUP_CONF";
+            SNAPPY_STARTUP_CONF="-locators={{ .Release.Name }}-locator:10334 $USER_PROVIDED_STARTUP_CONF";
             echo "Executing command: /opt/snappydata/start lead $WAIT_FOR_SERVICE_ARG $SNAPPY_STARTUP_CONF";
 
             /opt/snappydata/start lead $WAIT_FOR_SERVICE_ARG $SNAPPY_STARTUP_CONF;
@@ -72,6 +73,12 @@ spec:
         volumeMounts:
         - mountPath: "/opt/snappydata/work"
           name: snappy-disk-claim
+        - mountPath: /snappy_conf
+          name: snappy-config-properties
+      volumes:
+        - name: snappy-config-properties
+          configMap:
+            name: {{ .Release.Name }}-configmap
 
   volumeClaimTemplates:
   - metadata:

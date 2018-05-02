@@ -46,6 +46,8 @@ spec:
             rm -f start;
             wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
             chmod 744 start;
+            cp /snappy_conf/* /opt/snappydata/conf;
+
             SNAPPY_STARTUP_CONF={{ .Values.locators.conf | default "" }};
             /opt/snappydata/start locator $SNAPPY_STARTUP_CONF;
         lifecycle:
@@ -69,6 +71,12 @@ spec:
         volumeMounts:
         - mountPath: "/opt/snappydata/work"
           name: snappy-disk-claim
+        - mountPath: /snappy_conf
+          name: snappy-config-properties
+      volumes:
+        - name: snappy-config-properties
+          configMap:
+            name: {{ .Release.Name }}-configmap
 
   volumeClaimTemplates:
   - metadata:

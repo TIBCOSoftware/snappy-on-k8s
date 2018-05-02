@@ -19,23 +19,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ .Release.Name }}-locator-internal"
-  labels:
-    app: {{ template "snappydata.name" . }}
-    chart: {{ template "snappydata.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
-spec:
-  ports:
-  - port: 10334
-    targetPort: 10334
-    name: locator-clustering-endpoint
-  selector:
-    app: "{{ .Release.Name }}-locator"
----
-apiVersion: v1
-kind: Service
-metadata:
   name: "{{ .Release.Name }}-server-public"
   labels:
     app: {{ template "snappydata.name" . }}
