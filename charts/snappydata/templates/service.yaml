@@ -37,7 +37,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ .Release.Name }}-ui"
+  name: "{{ .Release.Name }}-leader-public"
   labels:
     app: {{ template "snappydata.name" . }}
     chart: {{ template "snappydata.chart" . }}
@@ -48,6 +48,12 @@ spec:
   - port: 5050
     targetPort: 5050
     name: spark
+  - port: 8090
+    targetPort: 8090
+    name: jobserver
+  - port: 3768
+    targetPort: 3768
+    name: zeppelin-interpreter
   type: LoadBalancer
   selector:
     app: "{{ .Release.Name }}-leader"

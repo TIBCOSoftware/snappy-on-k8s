@@ -42,14 +42,10 @@ spec:
           - "/bin/bash"
           - "-c"
           - >
-            yum -y -q install wget; yum clean all -y;
-            rm -f start;
-            wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
-            chmod 744 start;
             cp /snappy_conf/* /opt/snappydata/conf;
 
             SNAPPY_STARTUP_CONF={{ .Values.locators.conf | default "" }};
-            /opt/snappydata/start locator $SNAPPY_STARTUP_CONF;
+            start locator $SNAPPY_STARTUP_CONF;
         lifecycle:
           preStop:
             exec:

@@ -3,7 +3,7 @@
 
 image:
   repository: snappydatainc/snappydata
-  tag: 1.0.1
+  tag: 1.0.1.1
   pullPolicy: IfNotPresent
 
 locators:

@@ -42,18 +42,14 @@ spec:
           - "/bin/bash"
           - "-c"
           - >
-            yum -y install nc wget && yum clean all -y;
-            rm -f start;
-            wget -q https://raw.githubusercontent.com/SnappyDataInc/snappy-cloud-tools/SNAP-2280/docker/start;
-            chmod 744 start;
             cp /snappy_conf/* /opt/snappydata/conf;
 
             WAIT_FOR_SERVICE_ARG="--get-ip {{ .Release.Name }}-server-public --wait-for {{ .Release.Name }}-locator 10334";
             USER_PROVIDED_STARTUP_CONF={{ .Values.servers.conf | default "" }};
             SNAPPY_STARTUP_CONF="-locators={{ .Release.Name }}-locator:10334 $USER_PROVIDED_STARTUP_CONF";
-            echo "Executing command: /opt/snappydata/start server $WAIT_FOR_SERVICE $SNAPPY_STARTUP_CONF";
+            echo "Executing command: start server $WAIT_FOR_SERVICE $SNAPPY_STARTUP_CONF";
 
-            /opt/snappydata/start server $WAIT_FOR_SERVICE_ARG $SNAPPY_STARTUP_CONF;
+            start server $WAIT_FOR_SERVICE_ARG $SNAPPY_STARTUP_CONF;
         lifecycle:
           preStop:
             exec:
