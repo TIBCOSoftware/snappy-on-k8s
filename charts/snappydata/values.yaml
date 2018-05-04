@@ -7,7 +7,6 @@ image:
   pullPolicy: IfNotPresent
 
 locators:
-  replicaCount: 1
   ## config options for locators
   conf: ""
   resources:
@@ -51,7 +50,6 @@ servers:
     size: 10Gi
 
 leaders:
-  replicaCount: 1
   ## config options for leaders
   conf: ""
   resources:

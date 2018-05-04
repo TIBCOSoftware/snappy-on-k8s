@@ -25,20 +25,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: snappydata-locator-internal
-  labels:
-    app: snappydata
-spec:
-  ports:
-  - port: 10334
-    targetPort: 10334
-    name: locator-clustering-endpoint
-  selector:
-    app: snappydata-locator
----
-apiVersion: v1
-kind: Service
-metadata:
   name: snappydata-server-public
   labels:
     app: snappydata
@@ -230,7 +216,7 @@ spec:
           - "/bin/bash"
           - "-c"
           - >
-            start server --get-ip snappydata-server-public --wait-for snappydata-locator-internal 10334 -locators=snappydata-locator-internal:10334;
+            start server --get-ip snappydata-server-public --wait-for snappydata-locator 10334 -locators=snappydata-locator:10334;
         lifecycle:
           preStop:
             exec:
@@ -291,7 +277,7 @@ spec:
           - "/bin/bash"
           - "-c"
           - >
-            start lead --get-ip snappydata-leader-public --wait-for snappydata-server-public 1527 -locators=snappydata-locator-internal:10334 -zeppelin.interpreter.enable=true;
+            start lead --get-ip snappydata-leader-public --wait-for snappydata-server-public 1527 -locators=snappydata-locator:10334 -zeppelin.interpreter.enable=true;
         lifecycle:
           preStop:
             exec:
