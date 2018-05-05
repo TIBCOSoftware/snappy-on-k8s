@@ -92,11 +92,27 @@ RUN echo "$LOG_TAG Install R related packages" && \
     R -e "install.packages('Rcpp', repos='http://cran.us.r-project.org')" && \
     Rscript -e "library('devtools'); library('Rcpp'); install_github('ramnathv/rCharts')"
 
-RUN echo "$LOG_TAG Download Zeppelin binary" && \
+ENV SEARCH_STRING="<name>zeppelin.interpreters<\/name>"
+ENV INSERT_STRING="org.apache.zeppelin.interpreter.SnappyDataZeppelinInterpreter,org.apache.zeppelin.interpreter.SnappyDataSqlZeppelinInterpreter,"
+ENV LEAD_HOST="localhost"
+ENV LEAD_PORT="3768"
+
+RUN echo "$LOG_TAG Download Zeppelin binary and install interpreter for snappydata" && \
     wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
     tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
     rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
-    mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME}
+    mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME} && \
+    cp ${Z_HOME}/conf/zeppelin-site.xml.template ${Z_HOME}/conf/zeppelin-site.xml && \
+    sed -i "/${SEARCH_STRING}/{n;s/<value>/<value>${INSERT_STRING}/}" ${Z_HOME}/conf/zeppelin-site.xml && \
+    ${Z_HOME}/bin/install-interpreter.sh --name snappydata --artifact io.snappydata:snappydata-zeppelin:0.7.3 && \
+    ${Z_HOME}/bin/zeppelin-daemon.sh start && \
+    while ! test -f  ${Z_HOME}/conf/interpreter.json; do sleep 3s; done && \
+    ${Z_HOME}/bin/zeppelin-daemon.sh stop && \
+    sed -i "/group\": \"snappydata\"/,/isExistingProcess\": false/{s/port\": -1/port\": ${LEAD_PORT}/}" ${Z_HOME}/conf/interpreter.json && \
+    sed -i "/group\": \"snappydata\"/,/isExistingProcess\": false/{s/isExistingProcess\": false/isExistingProcess\": snappydatainc_marker/}" ${Z_HOME}/conf/interpreter.json && \
+    sed -i "/snappydatainc_marker/a \"host\": \"${LEAD_HOST}\"," ${Z_HOME}/conf/interpreter.json && \
+    sed -i "s/snappydatainc_marker/true/" ${Z_HOME}/conf/interpreter.json
+
 
 RUN echo "$LOG_TAG Cleanup" && \
     apt-get autoclean && \

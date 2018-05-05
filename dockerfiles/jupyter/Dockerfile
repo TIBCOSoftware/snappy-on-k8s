@@ -89,11 +89,10 @@ RUN  source activate ipykernel_py2 && \
      numpy \
      pandas \ 
      nltk \
-     tensorflow
-
-RUN source activate ipykernel_py2 && \
-    pip install \
-    sklearn \
-    wordcloud \
-    treeinterpreter
+     tensorflow && \
+     source activate ipykernel_py2 && \
+     pip install \
+     sklearn \
+     wordcloud \
+     treeinterpreter
 

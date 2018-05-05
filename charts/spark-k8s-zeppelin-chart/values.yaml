@@ -6,12 +6,16 @@ replicaCount: 1
 
 image:
   repository: snappydatainc
-  tag: zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.1
+  tag: zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.1-test
   pullPolicy: IfNotPresent
 
 zeppelinService:
   type: LoadBalancer
   port: 8080
+  # Attributes required to use Zeppelin interpreter for SnappyData in notebook.
+  # Provide the hostname/IP and port of the leader pod.
+  interpreterHost: "localhost"
+  interpreterPort: "3768"
 
 sparkWebUI:
   type: LoadBalancer
