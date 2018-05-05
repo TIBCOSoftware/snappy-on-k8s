@@ -43,7 +43,7 @@ spec:
             cp /snappy_conf/* /opt/snappydata/conf;
 
             WAIT_FOR_SERVICE_ARG="--get-ip {{ .Release.Name }}-leader-public --wait-for {{ .Release.Name }}-server 1527";
-            USER_PROVIDED_STARTUP_CONF={{ .Values.servers.conf | default "" }};
+            USER_PROVIDED_STARTUP_CONF={{ .Values.leaders.conf | default "" }};
             SNAPPY_STARTUP_CONF="-locators={{ .Release.Name }}-locator:10334 $USER_PROVIDED_STARTUP_CONF";
             echo "Executing command: start lead $WAIT_FOR_SERVICE_ARG $SNAPPY_STARTUP_CONF";
 
