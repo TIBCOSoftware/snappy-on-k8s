@@ -63,6 +63,7 @@ spec:
               echo "SPARK_SUBMIT_OPTIONS are: $SPARK_SUBMIT_OPTIONS";
               sed -i "/group\": \"snappydata\"/,/isUserImpersonate\": false/{s/host\": \"localhost\"/host\": \"{{ .Values.zeppelinService.interpreterHost }}\"/}" /zeppelin/conf/interpreter.json;
               sed -i "/group\": \"snappydata\"/,/isUserImpersonate\": false/{s/port\": 3768/port\": {{ .Values.zeppelinService.interpreterPort }}/}" /zeppelin/conf/interpreter.json;
+              rm -f /zeppelin/conf/interpreter.json;
               echo "Starting Zeppelin server ...";
               /zeppelin/bin/zeppelin.sh
           envFrom:
