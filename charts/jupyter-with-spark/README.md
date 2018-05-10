@@ -26,10 +26,10 @@
 3. Jupyter notebook server URL can be found by running the commands displayed after running `helm install ...` above. 
 
 ```bash
-  $ export JUPYTER_SERVICE_IP=$(kubectl get svc --namespace default jupyter-jupyter-notebook-ui -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  $ export JUPYTER_SERVICE_IP=$(kubectl get svc --namespace default jupyter-jupyter-spark -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
   $ echo http://$JUPYTER_SERVICE_IP:8888
 ```
-  *NOTE*: It may take a few minutes before the LoadBalancer's IP is available. You can watch the status of by running `kubectl get svc -w upyter-jupyter-notebook-ui`
+  *NOTE*: It may take a few minutes before the LoadBalancer's IP is available. You can watch the status of by running `kubectl get svc -w jupyter-jupyter-spark`
 
 ### Enabling event logging on Google Cloud Storage (GCS)
 To enable event logging for the spark application which you would launch via Jupyter notebooks, follow these steps **before** installing this chart.
@@ -102,7 +102,7 @@ or while installing the chart as `helm install --name jupyter --set sparkWebUI.p
 Once you create SparkContext in your Jupyter notebook, you can access the Spark UI via the URL obtained by running below commands (displayed by `helm install`):
 
 ```bash
-   $ export SPARK_UI_SERVICE_IP=$(kubectl get svc --namespace default jupyter-jupyter-spark-web-ui -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+   $ export SPARK_UI_SERVICE_IP=$(kubectl get svc --namespace default jupyter-jupyter-spark -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
    $ echo http://$SPARK_UI_SERVICE_IP:4040
 ```
 

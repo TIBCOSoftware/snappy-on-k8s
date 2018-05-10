@@ -2,9 +2,9 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{ template "spark-k8s-zeppelin-chart.fullname" . }}
+  name: {{ template "zeppelin-with-spark.fullname" . }}
   labels:
-    app: {{ template "spark-k8s-zeppelin-chart.fullname" . }}
+    app: {{ template "zeppelin-with-spark.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"

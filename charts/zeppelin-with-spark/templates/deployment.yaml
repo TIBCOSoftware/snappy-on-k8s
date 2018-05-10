@@ -1,22 +1,22 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: {{ template "spark-k8s-zeppelin-chart.fullname" . }}
+  name: {{ template "zeppelin-with-spark.fullname" . }}
   labels:
-    app: {{ template "spark-k8s-zeppelin-chart.name" . }}
-    chart: {{ template "spark-k8s-zeppelin-chart.chart" . }}
+    app: {{ template "zeppelin-with-spark.name" . }}
+    chart: {{ template "zeppelin-with-spark.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ template "spark-k8s-zeppelin-chart.name" . }}
+      app: {{ template "zeppelin-with-spark.name" . }}
       release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ template "spark-k8s-zeppelin-chart.name" . }}
+        app: {{ template "zeppelin-with-spark.name" . }}
         release: {{ .Release.Name }}
     spec:
       containers:
@@ -120,7 +120,7 @@ spec:
         - name: data
         {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: {{ .Values.persistence.existingClaim | default (include "spark-k8s-zeppelin-chart.fullname" .) }}
+            claimName: {{ .Values.persistence.existingClaim | default (include "zeppelin-with-spark.fullname" .) }}
         {{- else }}
           emptyDir: {}
         {{- end -}}

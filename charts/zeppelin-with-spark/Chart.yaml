@@ -1,7 +1,7 @@
 apiVersion: v1
 appVersion: "1.0"
 description: Spark cluster managed by Kubernetes with Zeppelin Notebook environment 
-name: spark-k8s-zeppelin-chart
+name: zeppelin-with-spark
 version: 0.1.0
 home: https://github.com/apache-spark-on-k8s/spark
 icon: http://spark.apache.org/images/spark-logo-trademark.png

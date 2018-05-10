@@ -25,7 +25,7 @@ Example output:
   ```
 Above mentioned labels can be used in spark-submit configuration options to enable dynamic executor scaling
   
-For example in values.yaml of [spark-k8s-zeppelin chart](https://github.com/SnappyDataInc/spark-on-k8s/tree/master/charts/spark-k8s-zeppelin-chart), modify the SPARK_SUBMIT_OPTIONS
+For example in values.yaml of [spark-k8s-zeppelin chart](https://github.com/SnappyDataInc/spark-on-k8s/tree/master/charts/zeppelin-with-spark), modify the SPARK_SUBMIT_OPTIONS
  as given below (note the options for dynamicAllocation and shuffle). This will enable dynamic executor scaling and use the 
  shuffle service installed above.
 

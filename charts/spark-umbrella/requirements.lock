@@ -2,8 +2,8 @@ dependencies:
 - name: spark-hs
   repository: file://../spark-hs
   version: 0.1.0
-- name: spark-k8s-zeppelin-chart
-  repository: file://../spark-k8s-zeppelin-chart
+- name: zeppelin-with-spark
+  repository: file://../zeppelin-with-spark
   version: 0.1.0
 - name: jupyter-with-spark
   repository: file://../jupyter-with-spark

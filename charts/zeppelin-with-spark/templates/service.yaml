@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-jupyter-spark
+  name: {{ template "zeppelin-with-spark.fullname" . }}
   labels:
-    app: {{ template "jupyter-with-spark.name" . }}
-    chart: {{ template "jupyter-with-spark.chart" . }}
+    app: {{ template "zeppelin-with-spark.name" . }}
+    chart: {{ template "zeppelin-with-spark.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
-  type: {{ .Values.jupyterService.type | default "LoadBalancer" | quote }}
+  type: {{ .Values.zeppelinService.type | default "LoadBalancer" | quote }}
   ports:
-    - port: {{ .Values.jupyterService.port }}
+    - port: {{ .Values.zeppelinService.port }}
       targetPort: http
       protocol: TCP
       name: http
@@ -19,6 +19,6 @@ spec:
       protocol: TCP
       name: web-ui
   selector:
-    app: {{ template "jupyter-with-spark.name" . }}
+    app: {{ template "zeppelin-with-spark.name" . }}
     release: {{ .Release.Name }}
 ---

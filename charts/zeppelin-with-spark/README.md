@@ -36,7 +36,7 @@ helm init --service-account tiller --upgrade
 ```
   $ git clone https://github.com/SnappyDataInc/spark-on-k8s
   $ cd charts
-  $ helm install --name example ./spark-k8s-zeppelin-chart/
+  $ helm install --name example ./zeppelin-with-spark/
 ```
 The above command will deploy the helm chart and will display instructions to access Zeppelin service and Spark UI.
 
@@ -56,10 +56,10 @@ For more information on RBAC authorization and how to configure Kubernetes servi
 
 3. Accessing Zeppelin environment: Zeppelin service URL can be found by running following commands
 
-*NOTE*: It may take a few minutes for the LoadBalancer IP to be available. You can watch the status of by running `kubectl get svc -w example-spark-k8s-zeppelin-chart`
+*NOTE*: It may take a few minutes for the LoadBalancer IP to be available. You can watch the status of by running `kubectl get svc -w example-zeppelin-with-spark`
 
 ```
-	$ export ZEPPELIN_SERVICE_IP=$(kubectl get svc --namespace default example-spark-k8s-zeppelin-chart -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+	$ export ZEPPELIN_SERVICE_IP=$(kubectl get svc --namespace default example-zeppelin-with-spark -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 	$ echo http://$ZEPPELIN_SERVICE_IP:8080
 ```
 Use the URL printed by the above command to access Zeppelin.
@@ -89,7 +89,7 @@ Here we list steps to configure Spark event logging on Google Cloud Storage
 	```
 3. To allow Spark Driver to write to GCS bucket, we need to mount the json key file on the driver pod. First copy the json file into 'conf/secrets' directory of spark-k8s-zeppelin chart
 	```
-	$ cp sparkonk8s-test.json spark-k8s-zeppelin-chart/conf/secrets/
+	$ cp sparkonk8s-test.json zeppelin-with-spark/conf/secrets/
 	```
     Also set 'mountSecrets' field of values.yaml file to true. When 'mountSecrets' 
     is set to true json key file will be mounted on path '/etc/secrets' of the pod.  
@@ -277,6 +277,6 @@ These configuration attributes can be set in the `values.yaml` file or while usi
 
 ```
 # set an attribute while using helm install command
-helm install --name zeppelin --set serviceAccount=spark ./spark-k8s-zeppelin-chart
+helm install --name zeppelin --set serviceAccount=spark ./zeppelin-with-spark
 ```
  
