@@ -68,7 +68,7 @@ Use the URL printed by the above command to access Zeppelin.
 
 NOTE: Below command will work ONLY after a Spark job is launched. Run a Spark Notebook, first. 
 ```
-   export SPARK_UI_SERVICE_IP=$(kubectl get svc --namespace default example-zeppelin-spark-web-ui -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+   export SPARK_UI_SERVICE_IP=$(kubectl get svc --namespace default example-zeppelin -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
    echo http://$SPARK_UI_SERVICE_IP:4040
 ```
 Use the URL printed by the above command to access Spark UI.

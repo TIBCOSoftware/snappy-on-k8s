@@ -39,7 +39,7 @@ NAME                              TYPE           CLUSTER-IP      EXTERNAL-IP    
 kubernetes                        ClusterIP      10.63.240.1     <none>          443/TCP           1d
 spark-all-jupyter-spark           LoadBalancer   10.63.246.130   35.184.71.164   8888:31540/TCP    9m
 spark-all-rss                     LoadBalancer   10.63.246.190   35.192.235.35   10000:31000/TCP   9m
-spark-all-zeppelin-spark          LoadBalancer   10.63.254.150   35.192.68.147   8080:30522/TCP    9m
+spark-all-zeppelin                LoadBalancer   10.63.254.150   35.192.68.147   8080:30522/TCP    9m
 ```
 > Access the zeppelin notebook environment using URL external-ip:8080 from any browser.
 > Spark UI is accessible using URL external-ip:4040. 
