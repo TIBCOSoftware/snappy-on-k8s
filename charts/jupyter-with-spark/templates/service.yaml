@@ -10,11 +10,11 @@ metadata:
 spec:
   type: {{ .Values.jupyterService.type | default "LoadBalancer" | quote }}
   ports:
-    - port: {{ .Values.jupyterService.port }}
+    - port: {{ .Values.jupyterService.jupyterPort }}
       targetPort: http
       protocol: TCP
       name: http
-    - port: {{ .Values.sparkWebUI.port }}
+    - port: {{ .Values.jupyterService.sparkUIPort }}
       targetPort: web-ui
       protocol: TCP
       name: web-ui

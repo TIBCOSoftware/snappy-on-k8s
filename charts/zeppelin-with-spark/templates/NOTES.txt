@@ -7,8 +7,8 @@ Get the application URL by running these commands:
      NOTE: It may take a few minutes for the LoadBalancer IP to be available.
            You can watch the status of by running 'kubectl get svc -w {{ template "zeppelin-with-spark.fullname" . }}'
   export ZEPPELIN_SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "zeppelin-with-spark.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-  echo "Access Zeppelin at http://$ZEPPELIN_SERVICE_IP:{{ .Values.zeppelinService.port }}"
-  echo "Access Spark at http://$ZEPPELIN_SERVICE_IP:{{ .Values.sparkWebUI.port }}"
+  echo "Access Zeppelin at http://$ZEPPELIN_SERVICE_IP:{{ .Values.zeppelinService.zeppelinPort }}"
+  echo "Access Spark at http://$ZEPPELIN_SERVICE_IP:{{ .Values.zeppelinService.sparkUIPort }} after a Spark job is run."
 {{- else if contains "ClusterIP" .Values.zeppelinService.type }}
   export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "zeppelin-with-spark.name" . }},release={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
   echo "Visit http://127.0.0.1:8080 to access Zeppelin server"

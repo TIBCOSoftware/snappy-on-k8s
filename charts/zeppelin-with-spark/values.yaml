@@ -11,15 +11,8 @@ image:
 
 zeppelinService:
   type: LoadBalancer
-  port: 8080
-  # Attributes required to use Zeppelin interpreter for SnappyData in notebook.
-  # Provide the hostname/IP and port of the leader pod.
-  interpreterHost: "localhost"
-  interpreterPort: "3768"
-
-sparkWebUI:
-  type: LoadBalancer
-  port: 4040
+  zeppelinPort: 8080
+  sparkUIPort: 4040
 
 serviceAccount: default
 

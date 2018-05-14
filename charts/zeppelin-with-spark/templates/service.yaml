@@ -10,11 +10,11 @@ metadata:
 spec:
   type: {{ .Values.zeppelinService.type | default "LoadBalancer" | quote }}
   ports:
-    - port: {{ .Values.zeppelinService.port }}
+    - port: {{ .Values.zeppelinService.zeppelinPort }}
       targetPort: http
       protocol: TCP
       name: http
-    - port: {{ .Values.sparkWebUI.port }}
+    - port: {{ .Values.zeppelinService.sparkUIPort }}
       targetPort: web-ui
       protocol: TCP
       name: web-ui

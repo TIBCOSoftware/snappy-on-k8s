@@ -96,8 +96,8 @@ spark = SparkSession.builder.config("spark.app.name", "spark-pi")\
       .getOrCreate()
 ```
 
-You can change the default Spark UI port from 4040 to something else in the notebook, either by updating it in the [values.yml](values.yaml) under `sparkWebUI` attribute 
-or while installing the chart as `helm install --name jupyter --set sparkWebUI.port=5050 ./spark-on-k8s/charts/jupyter-with-spark/`.
+You can change the default Spark UI port from 4040 to something else in the notebook, either by updating it in the [values.yml](values.yaml) under `jupyterService` attribute 
+or while installing the chart as `helm install --name jupyter --set jupyterService.sparkUIPort=5050 ./spark-on-k8s/charts/jupyter-with-spark/`.
 
 Once you create SparkContext in your Jupyter notebook, you can access the Spark UI via the URL obtained by running below commands (displayed by `helm install`):
 
@@ -146,9 +146,8 @@ print("Pi is roughly %f" % (4.0 * count / n))
    | `image.tag`             |  Tag for the Docker image             |     `5.2.2-spark-v2.2.0-kubernetes-0.5.1`   | 
    | `image.pullPolicy`      |  Pull policy for the image            |     `IfNotPresent`                          |
    | `jupyterService.type`   |  K8S service type for Jupyter server  |     `LoadBalancer`                          |
-   | `jupyterService.port`   |  Port for Jupyter notebook service    |     `8080`                                  |
-   | `sparkWebUI.type`       |  K8S service type for for Spark UI    |     `LoadBalancer`                          |
-   | `sparkWebUI.port`       |  Port for Spark service               |     `4040`                                  |
+   | `jupyterService.jupyterPort`   |  Port for Jupyter notebook service    |     `8080`                           |
+   | `jupyterService.sparkUIPort`   |  Port for Spark service               |     `4040`                           |
    | `serviceAccount`        |  Service account used to deploy Jupyter and run Spark jobs |     `default`          |
    | `sparkEventLog.enableHistoryEvents` | Whether to enable Spark event logging, required by History server |  `false` |
    | `sparkEventLog.eventLogDir` | URL of the GCS bucket where Spark event logs will be written | |
