@@ -1,22 +1,22 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: {{ template "spark-k8s-zeppelin-chart.fullname" . }}
+  name: {{ template "zeppelin-with-spark.fullname" . }}
   labels:
-    app: {{ template "spark-k8s-zeppelin-chart.name" . }}
-    chart: {{ template "spark-k8s-zeppelin-chart.chart" . }}
+    app: {{ template "zeppelin-with-spark.name" . }}
+    chart: {{ template "zeppelin-with-spark.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ template "spark-k8s-zeppelin-chart.name" . }}
+      app: {{ template "zeppelin-with-spark.name" . }}
       release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: {{ template "spark-k8s-zeppelin-chart.name" . }}
+        app: {{ template "zeppelin-with-spark.name" . }}
         release: {{ .Release.Name }}
     spec:
       containers:
@@ -25,10 +25,10 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: {{ .Values.zeppelinService.zeppelinPort }}
               protocol: TCP
             - name: web-ui
-              containerPort: 4040
+              containerPort: {{ .Values.zeppelinService.sparkUIPort }}
               protocol: TCP
           command:
             - "/bin/bash"
@@ -59,10 +59,9 @@ spec:
               {{- end }}
               export SPARK_SUBMIT_OPTIONS="$SPARK_SUBMIT_OPTIONS $SPARK_EVENT_LOG_CONFIG $SPARK_SECRETS_CONFIG \
                --conf spark.kubernetes.driver.pod.name=$HOSTNAME \
-               --conf spark.kubernetes.authenticate.driver.serviceAccountName={{ .Values.global.serviceAccount | default .Values.serviceAccount }}";
+               --conf spark.kubernetes.authenticate.driver.serviceAccountName={{ .Values.global.serviceAccount | default .Values.serviceAccount }} \
+               --conf spark.ui.port={{ .Values.zeppelinService.sparkUIPort }}";
               echo "SPARK_SUBMIT_OPTIONS are: $SPARK_SUBMIT_OPTIONS";
-              sed -i "/group\": \"snappydata\"/,/isUserImpersonate\": false/{s/host\": \"localhost\"/host\": \"{{ .Values.zeppelinService.interpreterHost }}\"/}" /zeppelin/conf/interpreter.json;
-              sed -i "/group\": \"snappydata\"/,/isUserImpersonate\": false/{s/port\": 3768/port\": {{ .Values.zeppelinService.interpreterPort }}/}" /zeppelin/conf/interpreter.json;
               rm -f /zeppelin/conf/interpreter.json;
               echo "Starting Zeppelin server ...";
               /zeppelin/bin/zeppelin.sh
@@ -120,7 +119,7 @@ spec:
         - name: data
         {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: {{ .Values.persistence.existingClaim | default (include "spark-k8s-zeppelin-chart.fullname" .) }}
+            claimName: {{ .Values.persistence.existingClaim | default (include "zeppelin-with-spark.fullname" .) }}
         {{- else }}
           emptyDir: {}
         {{- end -}}

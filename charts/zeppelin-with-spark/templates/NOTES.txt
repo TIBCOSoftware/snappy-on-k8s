@@ -1,0 +1,16 @@
+Get the application URL by running these commands:
+{{ if contains "NodePort" .Values.zeppelinService.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ template "zeppelin-with-spark.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.zeppelinService.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get svc -w {{ template "zeppelin-with-spark.fullname" . }}'
+  export ZEPPELIN_SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ template "zeppelin-with-spark.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo "Access Zeppelin at http://$ZEPPELIN_SERVICE_IP:{{ .Values.zeppelinService.zeppelinPort }}"
+  echo "Access Spark at http://$ZEPPELIN_SERVICE_IP:{{ .Values.zeppelinService.sparkUIPort }} after a Spark job is run."
+{{- else if contains "ClusterIP" .Values.zeppelinService.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "zeppelin-with-spark.name" . }},release={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  echo "Visit http://127.0.0.1:8080 to access Zeppelin server"
+  kubectl port-forward $POD_NAME 8080:80
+{{- end }}

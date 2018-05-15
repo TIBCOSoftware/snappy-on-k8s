@@ -25,10 +25,10 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.jupyterService.port }}
+              containerPort: {{ .Values.jupyterService.jupyterPort }}
               protocol: TCP
             - name: web-ui
-              containerPort: {{ .Values.sparkWebUI.port }}
+              containerPort: {{ .Values.jupyterService.sparkUIPort }}
               protocol: TCP
           command:
             - "/bin/sh"
@@ -45,6 +45,7 @@ spec:
               echo "spark.kubernetes.driver.pod.name               $HOSTNAME" >> /opt/spark/conf/spark-defaults.conf;
               echo "spark.kubernetes.executor.podNamePrefix        spark-$prefix" >> /opt/spark/conf/spark-defaults.conf;
               echo "spark.kubernetes.authenticate.driver.serviceAccountName {{ .Values.global.serviceAccount | default .Values.serviceAccount }}" >> /opt/spark/conf/spark-defaults.conf;
+              echo "spark.ui.port                                  {{ .Values.jupyterService.sparkUIPort }}" >> /opt/spark/conf/spark-defaults.conf;
             {{- if .Values.sparkEventLog.enableHistoryEvents }}
               echo "spark.eventLog.enabled                         true" >> /opt/spark/conf/spark-defaults.conf;
               echo "spark.eventLog.dir                             {{ .Values.sparkEventLog.eventLogDir }}" >> /opt/spark/conf/spark-defaults.conf;
@@ -53,14 +54,14 @@ spec:
               echo "spark.kubernetes.driver.secrets.{{ .Release.Name }}-secrets   /etc/secrets" >> /opt/spark/conf/spark-defaults.conf;
             {{- end }}
             {{- if eq .Values.jupyterService.password "" }}
-              . /usr/local/bin/start.sh jupyter notebook --NotebookApp.token='' --NotebookApp.port={{ .Values.jupyterService.port }};
+              . /usr/local/bin/start.sh jupyter notebook --NotebookApp.token='' --NotebookApp.port={{ .Values.jupyterService.jupyterPort }};
             {{ else }}
               echo "{ \"NotebookApp\": { \"password\": \"REPLACE_ME\" } }" > ~/.jupyter/jupyter_notebook_config.json;
               printf "import os\nfrom notebook.auth import passwd\nprint(passwd('{{ .Values.jupyterService.password }}'))" > hash.py;
               export HASHED=`python hash.py`;
               rm hash.py;
               sed -i -e "s/REPLACE_ME/${HASHED}/g" ~/.jupyter/jupyter_notebook_config.json;
-              . /usr/local/bin/start.sh jupyter notebook --NotebookApp.port={{ .Values.jupyterService.port }};
+              . /usr/local/bin/start.sh jupyter notebook --NotebookApp.port={{ .Values.jupyterService.jupyterPort }};
             {{- end }}
           livenessProbe:
             httpGet:

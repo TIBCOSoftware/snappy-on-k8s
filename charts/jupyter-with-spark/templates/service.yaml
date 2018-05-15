@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-jupyter-notebook-ui
+  name: {{ .Release.Name }}-jupyter-spark
   labels:
     app: {{ template "jupyter-with-spark.name" . }}
     chart: {{ template "jupyter-with-spark.chart" . }}
@@ -10,30 +10,15 @@ metadata:
 spec:
   type: {{ .Values.jupyterService.type | default "LoadBalancer" | quote }}
   ports:
-    - port: {{ .Values.jupyterService.port }}
+    - port: {{ .Values.jupyterService.jupyterPort }}
       targetPort: http
       protocol: TCP
       name: http
-  selector:
-    app: {{ template "jupyter-with-spark.name" . }}
-    release: {{ .Release.Name }}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Release.Name }}-jupyter-spark-web-ui
-  labels:
-    app: {{ template "jupyter-with-spark.name" . }}
-    chart: {{ template "jupyter-with-spark.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
-spec:
-  type: {{ .Values.sparkWebUI.type | default "LoadBalancer" | quote }}
-  ports:
-    - port: {{ .Values.sparkWebUI.port }}
+    - port: {{ .Values.jupyterService.sparkUIPort }}
       targetPort: web-ui
       protocol: TCP
       name: web-ui
   selector:
     app: {{ template "jupyter-with-spark.name" . }}
     release: {{ .Release.Name }}
+---

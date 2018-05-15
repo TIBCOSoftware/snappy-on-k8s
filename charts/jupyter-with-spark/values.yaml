@@ -10,7 +10,8 @@ image:
 
 jupyterService:
   type: LoadBalancer
-  port: 8888
+  jupyterPort: 8888
+  sparkUIPort: 4040
   # Set your password to access the notebook server. A default ('abc123') has been set for you.
   # Setting the password to empty string will disable the authentication (not recommended).
   password: 'abc123'

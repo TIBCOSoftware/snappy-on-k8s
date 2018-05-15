@@ -36,7 +36,7 @@ helm init --service-account tiller --upgrade
 ```
   $ git clone https://github.com/SnappyDataInc/spark-on-k8s
   $ cd charts
-  $ helm install --name example ./spark-k8s-zeppelin-chart/
+  $ helm install --name example ./zeppelin-with-spark/
 ```
 The above command will deploy the helm chart and will display instructions to access Zeppelin service and Spark UI.
 
@@ -54,24 +54,17 @@ For more information on RBAC authorization and how to configure Kubernetes servi
 [Using RBAC Authorization](https://kubernetes.io/docs/admin/authorization/rbac/) and
 [Configure Service Accounts for Pods](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/).
 
-3. Accessing Zeppelin environment: Zeppelin service URL can be found by running following commands
+3. Accessing Zeppelin environment: Zeppelin service URLs can be found by running following commands.
 
-*NOTE*: It may take a few minutes for the LoadBalancer IP to be available. You can watch the status of by running `kubectl get svc -w example-spark-k8s-zeppelin-chart`
+*NOTE*: It may take a few minutes for the LoadBalancer IP to be available. You can watch the status of by running `kubectl get svc -w example-zeppelin`
 
 ```
-	$ export ZEPPELIN_SERVICE_IP=$(kubectl get svc --namespace default example-spark-k8s-zeppelin-chart -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-	$ echo http://$ZEPPELIN_SERVICE_IP:8080
+    $ export ZEPPELIN_SERVICE_IP=$(kubectl get svc --namespace default example-zeppelin -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+    $ echo "Access Zeppelin at http://$ZEPPELIN_SERVICE_IP:8080"
+    $ echo "Access Spark at http://$ZEPPELIN_SERVICE_IP:4040 after a Spark job is run."
 ```
-Use the URL printed by the above command to access Zeppelin.
+*NOTE*: Spark UI will only be available after a Spark job is launched. Run your Spark Notebook first to do that. 
 
-4. Accessing Spark UI: Once Spark job is launched, Spark UI can be accessed by using following commands
-
-NOTE: Below command will work ONLY after a Spark job is launched. Run a Spark Notebook, first. 
-```
-   export SPARK_UI_SERVICE_IP=$(kubectl get svc --namespace default example-zeppelin-spark-web-ui -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-   echo http://$SPARK_UI_SERVICE_IP:4040
-```
-Use the URL printed by the above command to access Spark UI.
 
 ### Enabling Spark event logging for history server
 By default, Zeppelin chart does not enable Spark event logging. Users can enable Spark event logging to view job 
@@ -89,7 +82,7 @@ Here we list steps to configure Spark event logging on Google Cloud Storage
 	```
 3. To allow Spark Driver to write to GCS bucket, we need to mount the json key file on the driver pod. First copy the json file into 'conf/secrets' directory of spark-k8s-zeppelin chart
 	```
-	$ cp sparkonk8s-test.json spark-k8s-zeppelin-chart/conf/secrets/
+	$ cp sparkonk8s-test.json zeppelin-with-spark/conf/secrets/
 	```
     Also set 'mountSecrets' field of values.yaml file to true. When 'mountSecrets' 
     is set to true json key file will be mounted on path '/etc/secrets' of the pod.  
@@ -254,9 +247,8 @@ The following table lists the configuration parameters available for this chart
 | `image.tag`             |  Tag for the Docker image          |     `zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.0`         | 
 | `image.pullPolicy`      |  Pull policy for the image         |     `IfNotPresent`                                         |
 | `zeppelinService.type`  |  K8S service type for Zeppelin     |     `LoadBalancer`                                         |
-| `zeppelinService.port`  |  Port for Zeppelin service         |      `8080`                                                |
-| `sparkWebUI.type`       |  K8S service type for for Spark UI |     `LoadBalancer`                                         |
-| `sparkWebUI.port`       |  Port for Spark service                          |     `4040`                                   |
+| `zeppelinService.zeppelinPort`  |  Port for Zeppelin service         |      `8080`                                   |
+| `zeppelinService.sparkUIPort`   |  Port for Spark service            |      `4040`                                   |
 | `serviceAccount`        |  Service account used to deploy Zeppelin and run Spark jobs |     `default`                                    |
 | `environment`           |  Environment variables that need to be defined in containers. For example, those required by Spark and Zeppelin |        |
 | `environment.SPARK_SUBMIT_OPTIONS` | Configuration options for spark-submit, used by Zeppelin while running Spark jobs | |
@@ -277,6 +269,6 @@ These configuration attributes can be set in the `values.yaml` file or while usi
 
 ```
 # set an attribute while using helm install command
-helm install --name zeppelin --set serviceAccount=spark ./spark-k8s-zeppelin-chart
+helm install --name zeppelin --set serviceAccount=spark ./zeppelin-with-spark
 ```
  

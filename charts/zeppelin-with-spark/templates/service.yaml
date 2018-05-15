@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "zeppelin-with-spark.fullname" . }}
+  labels:
+    app: {{ template "zeppelin-with-spark.name" . }}
+    chart: {{ template "zeppelin-with-spark.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.zeppelinService.type | default "LoadBalancer" | quote }}
+  ports:
+    - port: {{ .Values.zeppelinService.zeppelinPort }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: {{ .Values.zeppelinService.sparkUIPort }}
+      targetPort: web-ui
+      protocol: TCP
+      name: web-ui
+  selector:
+    app: {{ template "zeppelin-with-spark.name" . }}
+    release: {{ .Release.Name }}
+---

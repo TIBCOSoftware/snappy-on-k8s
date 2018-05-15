@@ -5,8 +5,8 @@ dependencies:
     version: 0.1.0
     alias: historyserver
     condition: historyserver.enabled
-  - name:  spark-k8s-zeppelin-chart
-    repository: file://../spark-k8s-zeppelin-chart
+  - name:  zeppelin-with-spark
+    repository: file://../zeppelin-with-spark
     version: 0.1.0
     alias: zeppelin
     condition: zeppelin.enabled

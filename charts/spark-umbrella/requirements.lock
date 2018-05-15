@@ -2,8 +2,8 @@ dependencies:
 - name: spark-hs
   repository: file://../spark-hs
   version: 0.1.0
-- name: spark-k8s-zeppelin-chart
-  repository: file://../spark-k8s-zeppelin-chart
+- name: zeppelin-with-spark
+  repository: file://../zeppelin-with-spark
   version: 0.1.0
 - name: jupyter-with-spark
   repository: file://../jupyter-with-spark
@@ -14,5 +14,5 @@ dependencies:
 - name: spark-shuffle
   repository: file://../spark-shuffle
   version: 0.1.0
-digest: sha256:0ca6540ebedf6081e6893b702179cc44b9ea4e24ae5e0e20d410937f25a4ba06
-generated: 2018-04-01T23:16:59.698618234+05:30
+digest: sha256:821eb2bc83ac2430ca9c0c259bcea7c5f7417ad58d31be672240cb04e652df62
+generated: 2018-05-11T11:47:45.512908935+05:30

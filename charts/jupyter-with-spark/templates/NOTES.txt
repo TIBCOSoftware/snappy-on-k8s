@@ -1,30 +1,17 @@
-1. Get the application URL by running these commands:
+Get the application URL by running these commands:
 {{- if contains "NodePort" .Values.jupyterService.type }}
-  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-jupyter-notebook-ui)
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-jupyter-spark)
   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
-  echo http://$NODE_IP:$NODE_PORT
+  echo "Access Jupyter notebooks at http://$NODE_IP:$NODE_PORT"
+  echo "Access Spark at http://$NODE_IP:{{ .Values.jupyterService.sparkUIPort }} after a Spark job is run."
 {{- else if contains "LoadBalancer" .Values.jupyterService.type }}
      NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-           You can watch the status of by running 'kubectl get svc -w {{ .Release.Name }}-jupyter-notebook-ui'
-  export JUPYTER_SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ .Release.Name }}-jupyter-notebook-ui -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-  echo http://$JUPYTER_SERVICE_IP:{{ .Values.jupyterService.port }}
+           You can watch the status of by running 'kubectl get svc -w {{ .Release.Name }}-jupyter-spark'
+  export JUPYTER_SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ .Release.Name }}-jupyter-spark -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo "Access Jupyter notebooks at http://$JUPYTER_SERVICE_IP:{{ .Values.jupyterService.jupyterPort }}"
+  echo "Access Spark at http://$SPARK_UI_SERVICE_IP:{{ .Values.jupyterService.sparkUIPort }} after a Spark job is run."
 {{- else if contains "ClusterIP" .Values.jupyterService.type }}
   export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "jupyter-with-spark.name" . }},release={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
-  echo "Visit http://127.0.0.1:8888 to use your application"
+  echo "Visit http://127.0.0.1:8888 to access Jupyter notebooks"
   kubectl port-forward $POD_NAME 8888:80
-{{- end }}
-2. Get the Spark UI URL by running these commands:
-{{- if contains "NodePort" .Values.sparkWebUI.type }}
-  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ .Release.Name }}-jupyter-spark-web-ui)
-  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
-  echo http://$NODE_IP:$NODE_PORT
-{{- else if contains "LoadBalancer" .Values.sparkWebUI.type }}
-     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-           You can watch the status of by running 'kubectl get svc -w {{ .Release.Name }}-jupyter-spark-web-ui'
-  export SPARK_UI_SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ .Release.Name }}-jupyter-spark-web-ui -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-  echo http://$SPARK_UI_SERVICE_IP:{{ .Values.sparkWebUI.port }}
-{{- else if contains "ClusterIP" .Values.sparkWebUI.type }}
-  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "jupyter-with-spark.name" . }},release={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
-  echo "Visit http://127.0.0.1:4040 to use your application"
-  kubectl port-forward $POD_NAME 4040:80
 {{- end }}
