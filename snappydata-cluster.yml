@@ -1,0 +1,301 @@
+# Launch Snappydata 1.0.0 cluster on k8s 1.9
+# Submit using kubectl will create services for Locator, server and leader. 
+# The services provide access to port 1527 for the locator and server. 
+# The leader service opens the Pulse UI on port 5050
+#
+# Then, we launch 3 statefulSet pods each for Locator, server, Leader. 
+# Scale using the replica count below. 
+# Adjust CPU, memory to suit your needs. 
+# 
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-locator-public
+  labels:
+    app: snappydata
+spec:
+  ports:
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  type: LoadBalancer
+  selector:
+    app: snappydata-locator
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-server-public
+  labels:
+    app: snappydata
+spec:
+  ports:
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  type: LoadBalancer
+  selector:
+    app: snappydata-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-leader-public
+  labels:
+    app: snappydata
+spec:
+  ports:
+  - port: 5050
+    targetPort: 5050
+    name: spark
+  - port: 8090
+    targetPort: 8090
+    name: jobserver
+  - port: 3768
+    targetPort: 3768
+    name: zeppelin-interpreter
+  type: LoadBalancer
+  selector:
+    app: snappydata-leader
+---
+
+
+####################
+# Headless services
+####################
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-locator
+  labels:
+    app: snappydata
+spec:
+  ports:
+  - port: 10334
+    targetPort: 10334
+    name: locator
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  clusterIP: None
+  selector:
+    app: snappydata-locator
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-server
+  labels:
+    app: snappydata
+spec:
+  ports:
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  clusterIP: None
+  selector:
+    app: snappydata-server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: snappydata-leader
+  labels:
+    app: snappydata
+spec:
+  ports:
+  - port: 5050
+    targetPort: 5050
+    name: spark
+  clusterIP: None
+  selector:
+    app: snappydata-leader
+---
+
+
+#############################
+# Statefulset for locators
+#############################
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: snappydata-locator
+spec:
+  serviceName: snappydata-locator
+  replicas: 1
+  selector:
+    matchLabels:
+      app: snappydata-locator
+  template:
+    metadata:
+      labels:
+        app: snappydata-locator
+    spec:
+      containers:
+      - name: snappydata-locator
+        image: snappydatainc/snappydata:1.0.1.1
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "1024Mi"
+#           cpu: "200m"
+        ports:
+        - containerPort: 10334
+          name: locator
+        - containerPort: 1527
+          name: jdbc
+     # primitive liveness probe .. only useful when the JVM crashes
+        livenessProbe:
+          tcpSocket:
+            port: 1527
+          initialDelaySeconds: 80
+        command: 
+          - "/bin/bash"
+          - "-c"
+          - >
+            start locator;
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/opt/snappydata/sbin/snappy-locators.sh", "stop"]
+        volumeMounts:
+        - mountPath: "/opt/snappydata/work"
+          name: snappy-disk-claim
+
+  volumeClaimTemplates:
+  - metadata:
+      name: snappy-disk-claim
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: standard
+# A PV claim using 'standard' storage class. Will work only in Google container engine. 
+# In other clouds, create a PV and assign storageClassName ...
+
+
+---
+#############################
+# Statefulset for servers
+#############################
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: snappydata-server
+spec:
+  serviceName: snappydata-server
+  replicas: 2
+  selector:
+    matchLabels:
+      app: snappydata-server
+  template:
+    metadata:
+      labels:
+        app: snappydata-server
+    spec:
+      containers:
+      - name: snappydata-server
+        image: snappydatainc/snappydata:1.0.1.1
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "2048Mi"
+#           cpu: "1000m"
+        # Even servers use the same port as locator ... all run on independent pods
+        # ... and, the service will either roundrobin or loadbalance
+        ports:
+        - containerPort: 1527
+          name: jdbc
+        livenessProbe:
+          tcpSocket:
+            port: 1527
+#         initial delay intentionally kept large, as server waits(250 seconds) for locator to be available
+          initialDelaySeconds: 360
+        command:
+          - "/bin/bash"
+          - "-c"
+          - >
+            start server --get-ip snappydata-server-public --wait-for snappydata-locator 10334 -locators=snappydata-locator:10334;
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/opt/snappydata/sbin/snappy-servers.sh", "stop"]
+        volumeMounts:
+        - mountPath: "/opt/snappydata/work"
+          name: snappy-disk-claim
+
+  volumeClaimTemplates:
+  - metadata:
+      name: snappy-disk-claim
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: standard
+# A PV claim using 'standard' storage class. Will work only in Google container engine. 
+# In other clouds, create a PV and assign storageClassName ...
+
+
+---
+#############################
+# Statefulset for leaders
+#############################
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: snappydata-leader
+spec:
+  serviceName: snappydata-leader
+  replicas: 1
+  selector:
+    matchLabels:
+      app: snappydata-leader
+  template:
+    metadata:
+      labels:
+        app: snappydata-leader
+    spec:
+      containers:
+      - name: snappydata-leader
+        image: snappydatainc/snappydata:1.0.1.1
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "1024Mi"
+#            cpu: "1000m"
+        ports:
+        - containerPort: 5050
+          name: sparkui
+        livenessProbe:
+          tcpSocket:
+            port: 5050
+#         initial delay intentionally kept large, as lead waits(250 seconds) for servers to be available
+          initialDelaySeconds: 360
+        command: 
+          - "/bin/bash"
+          - "-c"
+          - >
+            start lead --get-ip snappydata-leader-public --wait-for snappydata-server-public 1527 -locators=snappydata-locator:10334 -zeppelin.interpreter.enable=true;
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/opt/snappydata/sbin/snappy-leads.sh", "stop"]
+        volumeMounts:
+        - mountPath: "/opt/snappydata/work"
+          name: snappy-disk-claim
+
+  volumeClaimTemplates:
+  - metadata:
+      name: snappy-disk-claim
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: standard
+# A PV claim using 'standard' storage class. Will work only in Google container engine. 
+# In other clouds, create a PV and assign storageClassName ...
+
+---

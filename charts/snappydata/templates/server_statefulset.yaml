@@ -1,0 +1,91 @@
+#############################
+# Statefulset for servers
+#############################
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "{{ .Release.Name }}-server"
+#  TODO: Do we need to change, for example like the one given below?
+#  name: {{ template "snappydata.fullname" . }}
+  labels:
+    app: {{ template "snappydata.name" . }}
+    chart: {{ template "snappydata.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  serviceName: "{{ .Release.Name }}-server"
+  replicas: {{ .Values.servers.replicaCount | default 2 }}
+  selector:
+    matchLabels:
+      app: "{{ .Release.Name }}-server"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Release.Name }}-server"
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: "{{ .Release.Name }}-server"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        # Even servers use the same port as locator ... all run on independent pods
+        # ... and, the service will either roundrobin or loadbalance
+        ports:
+        - containerPort: 1527
+          name: jdbc
+        livenessProbe:
+          tcpSocket:
+            port: 1527
+#         initial delay intentionally kept large, as server waits(250 seconds) for locator to be available
+          initialDelaySeconds: {{ .Values.servers.initialDelaySeconds | default 360 }}
+        command:
+          - "/bin/bash"
+          - "-c"
+          - >
+            cp /snappy_conf/* /opt/snappydata/conf;
+
+            WAIT_FOR_SERVICE_ARG="--get-ip {{ .Release.Name }}-server-public --wait-for {{ .Release.Name }}-locator 10334";
+            USER_PROVIDED_STARTUP_CONF={{ .Values.servers.conf | default "" }};
+            SNAPPY_STARTUP_CONF="-locators={{ .Release.Name }}-locator:10334 $USER_PROVIDED_STARTUP_CONF";
+            echo "Executing command: start server $WAIT_FOR_SERVICE_ARG $SNAPPY_STARTUP_CONF";
+
+            start server $WAIT_FOR_SERVICE_ARG $SNAPPY_STARTUP_CONF;
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/opt/snappydata/sbin/snappy-servers.sh", "stop"]
+        resources:
+{{ toYaml .Values.servers.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+        volumeMounts:
+        - mountPath: "/opt/snappydata/work"
+          name: snappy-disk-claim
+        - mountPath: /snappy_conf
+          name: snappy-config-properties
+      volumes:
+        - name: snappy-config-properties
+          configMap:
+            name: {{ .Release.Name }}-configmap
+
+  volumeClaimTemplates:
+  - metadata:
+      name: snappy-disk-claim
+    spec:
+      accessModes: [ {{ .Values.servers.persistence.accessMode | quote }} ]
+      resources:
+        requests:
+          storage: {{ .Values.servers.persistence.size | quote }}
+{{- if .Values.servers.persistence.storageClass }}
+      storageClassName: {{ .Values.servers.persistence.storageClass | quote }}
+{{- end }}

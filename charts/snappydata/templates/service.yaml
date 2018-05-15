@@ -1,0 +1,121 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Release.Name }}-locator-public"
+  labels:
+    app: {{ template "snappydata.name" . }}
+    chart: {{ template "snappydata.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  type: LoadBalancer
+  selector:
+    app: "{{ .Release.Name }}-locator"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Release.Name }}-server-public"
+  labels:
+    app: {{ template "snappydata.name" . }}
+    chart: {{ template "snappydata.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  type: LoadBalancer
+  selector:
+    app: "{{ .Release.Name }}-server"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Release.Name }}-leader-public"
+  labels:
+    app: {{ template "snappydata.name" . }}
+    chart: {{ template "snappydata.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+  - port: 5050
+    targetPort: 5050
+    name: spark
+  - port: 8090
+    targetPort: 8090
+    name: jobserver
+  - port: 3768
+    targetPort: 3768
+    name: zeppelin-interpreter
+  type: LoadBalancer
+  selector:
+    app: "{{ .Release.Name }}-leader"
+---
+
+####################
+# Headless services
+####################
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Release.Name }}-locator"
+  labels:
+    app: {{ template "snappydata.name" . }}
+    chart: {{ template "snappydata.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+  - port: 10334
+    targetPort: 10334
+    name: locator
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  clusterIP: None
+  selector:
+    app: "{{ .Release.Name }}-locator"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Release.Name }}-server"
+  labels:
+    app: {{ template "snappydata.name" . }}
+    chart: {{ template "snappydata.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+  - port: 1527
+    targetPort: 1527
+    name: jdbc
+  clusterIP: None
+  selector:
+    app: "{{ .Release.Name }}-server"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Release.Name }}-leader"
+  labels:
+    app: {{ template "snappydata.name" . }}
+    chart: {{ template "snappydata.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  ports:
+  - port: 5050
+    targetPort: 5050
+    name: spark
+  clusterIP: None
+  selector:
+    app: "{{ .Release.Name }}-leader"
+---
