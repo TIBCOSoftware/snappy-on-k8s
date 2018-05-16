@@ -42,19 +42,46 @@ We use SnappyData Helm chart to deploy SnappyData on Kubernetes. Use `helm insta
 git clone https://github.com/SnappyDataInc/spark-on-k8s
 # go to charts directory
 cd charts
-# install the chart
-helm install --name snappydata ./snappydata/
+# install the chart in namespace 'snappy'
+helm install --name snappydata --namespace snappy ./snappydata/
 ```
 
-The above command will display the Kubernetes objects created by the chart on the console(service, statefulsets etc.).
+The above command will deploy the chart in a namespace called 'snappy' and will display the Kubernetes objects created 
+by the chart on the console(service, statefulsets etc.).
 
-SnappyData helm chart uses Kubernetes [statefulsets](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) 
+SnappyData Helm chart uses Kubernetes [statefulsets](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) 
 to launch locator, lead and servers. By default SnappyData helm chart will deploy SnappyData cluster consisting of 
 1 locator, 1 lead and 2 servers and services to access SnappyData endpoints.
 
 You may monitor the Kubernetes UI dashboard to check the status of the components as it takes a few minutes for all 
 servers to be online. SnappyData chart provisions volumes dynamically for servers, locator and lead. These volumes and 
 the data on it will be retained even the chart deployment is deleted.
+
+
+### Accessing SnappyData UI
+
+SnappyData UI dashboard can be access using `snappydata-leader-public` service. Use URL of the form `externalIp:5050` to 
+view SnappyData UI dashboard in a browser. 
+
+To view SnappyData services running in K8S cluster use `kubectl get svc --namespace=snappy` command
+
+```
+# check the SnappyData services running in K8S cluster
+kubectl get svc --namespace=snappy
+# This will show output like following
+
+NAME                        TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                                        AGE
+snappydata-leader           ClusterIP      None            <none>           5050/TCP                                       5m
+snappydata-leader-public    LoadBalancer   10.51.255.175   35.232.102.51    5050:31964/TCP,8090:32700/TCP,3768:32575/TCP   5m
+snappydata-locator          ClusterIP      None            <none>           10334/TCP,1527/TCP                             5m
+snappydata-locator-public   LoadBalancer   10.51.241.224   104.198.47.162   1527:31957/TCP                                 5m
+snappydata-server           ClusterIP      None            <none>           1527/TCP                                       5m
+snappydata-server-public    LoadBalancer   10.51.248.27    35.232.16.4      1527:31853/TCP                                 5m
+
+```
+
+From the above output, the URL  `35.232.102.51:5050` can be used to view dashboard in browser.
+
 
 ### Executing queries using Snappy shell
 
@@ -66,11 +93,10 @@ To run Snappy shell from your laptop/workstation, download the SnappyData distri
 
 ```
 # check the SnappyData services running in K8S cluster
-kubctl get svc
+kubectl get svc --namespace=snappy
 # This will show output like following
 
 NAME                        TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                                        AGE
-kubernetes                  ClusterIP      10.51.240.1     <none>           443/TCP                                        26d
 snappydata-leader           ClusterIP      None            <none>           5050/TCP                                       5m
 snappydata-leader-public    LoadBalancer   10.51.255.175   35.232.102.51    5050:31964/TCP,8090:32700/TCP,3768:32575/TCP   5m
 snappydata-locator          ClusterIP      None            <none>           10334/TCP,1527/TCP                             5m
@@ -98,11 +124,10 @@ For Kubernetes deployments JDBC clients can connect to SnappyData system using t
 
 ```
 # check the SnappyData services running in K8S cluster
-kubctl get svc
+kubectl get svc --namespace=snappy
 # This will show output like following
 
 NAME                        TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                                        AGE
-kubernetes                  ClusterIP      10.51.240.1     <none>           443/TCP                                        26d
 snappydata-leader           ClusterIP      None            <none>           5050/TCP                                       5m
 snappydata-leader-public    LoadBalancer   10.51.255.175   35.232.102.51    5050:31964/TCP,8090:32700/TCP,3768:32575/TCP   5m
 snappydata-locator          ClusterIP      None            <none>           10334/TCP,1527/TCP                             5m
@@ -125,7 +150,7 @@ example JDBC program and how to obtain JDBC driver using Maven/SBT co-ordinates
 ### Submitting a SnappyData job
 
 >Note: To understand how to write a SnappyData job, refer to [how-to section in documentation for SnappyData jobs](http://snappydatainc.github.io/snappydata/howto/run_spark_job_inside_cluster/).
-To run a job in Kubernetes environment follow the the steps given below
+To run a job in Kubernetes deployment, follow the the steps given below
 
 To run Snappy job from your laptop/workstation, download the SnappyData distribution from 
 [SnappyData github releases page](https://github.com/SnappyDataInc/snappydata/releases). Use the `bin/snappy-job.sh` script 
@@ -134,11 +159,10 @@ to submit and run the job in the SnappyData cluster.  For submitting the job use
 
 ```
 # check the SnappyData services running in K8S cluster
-kubctl get svc
+kubectl get svc --namespace=snappy
 # This will show output like following
 
 NAME                        TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                                        AGE
-kubernetes                  ClusterIP      10.51.240.1     <none>           443/TCP                                        26d
 snappydata-leader           ClusterIP      None            <none>           5050/TCP                                       5m
 snappydata-leader-public    LoadBalancer   10.51.255.175   35.232.102.51    5050:31964/TCP,8090:32700/TCP,3768:32575/TCP   5m
 snappydata-locator          ClusterIP      None            <none>           10334/TCP,1527/TCP                             5m
@@ -153,7 +177,7 @@ Use the `snappydata-leader-public` services's external IP and port 8090 to submi
 ```
 # first cd to your SnappyData product dir
 cd $SNAPPY_HOME
-# submit the job using snappydata-leader-public service etxernalIp and port 8090 in the -lead option
+# Submit the job using snappydata-leader-public service etxernalIp and port 8090 in the -lead option
 # The command below submits a job called CreatePartitionedRowTable as given the SnappyData how-to docs
 bin/snappy-job.sh submit
   --app-name CreatePartitionedRowTable
@@ -226,22 +250,52 @@ SnappyData servers and 1 pod each for locator and leader. Upon deletion of the H
 terminate the SnappyData process running on it.  
 
 ### Description services that expose external endpoints
+
+SnappyData Helm chart creates services in order to allow user to make JDBC connections, execute Spark jobs and access
+SnappyData UI etc.  Services of type LoadBalancer have external IP address assigned and can be used to connect from outside 
+of Kubernetes cluster.  
+
+To check the service created for SnappyData deployment, use command `kubectl get svc --namespace=snappy`. For example if a SnappyData 
+release is deployed using command `helm install --name snappydata ./snappydata` as given in the [Quickstart](#Quickstart)
+
+```
+# check the SnappyData services running in K8S cluster
+kubectl get svc --namespace=snappy
+# This will show output like following
+
+NAME                        TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                                        AGE
+snappydata-leader           ClusterIP      None            <none>           5050/TCP                                       5m
+snappydata-leader-public    LoadBalancer   10.51.255.175   35.232.102.51    5050:31964/TCP,8090:32700/TCP,3768:32575/TCP   5m
+snappydata-locator          ClusterIP      None            <none>           10334/TCP,1527/TCP                             5m
+snappydata-locator-public   LoadBalancer   10.51.241.224   104.198.47.162   1527:31957/TCP                                 5m
+snappydata-server           ClusterIP      None            <none>           1527/TCP                                       5m
+snappydata-server-public    LoadBalancer   10.51.248.27    35.232.16.4      1527:31853/TCP                                 5m
+
+```
+
+In the above out output, three services viz. `snappydata-leader-public`, `snappydata-locator-public` and 
+`snappydata-server-public`  of type LoadBalancer have been created. These services have external IPs assigned and therefore 
+can be accessed from outside of Kubernetes. Remaining services that have no external ip are created for internal use.
+ 
+`snappydata-leader-public` service exposes port 5050 for SnappyData UI and port 8090 for to accept SnappyData jobs.
+`snappydata-locator-public` service exposes port 1527 to accept JDBC connections.
  
 ### Persistent Volumes 
 
+A Pod in a SnappyData deployment has a persistent volume mounted it. This volume is dynamically provisioned and is used
+to store data directory for SnappyData. The persistent volume (PV) is mounted on path `/opt/snappydata/work` in each Pod. 
+These volumes and the data on it will be retained even if the chart deployment is deleted. If the chart is deployed again 
+with same chart name and the volume exists then the existing volume is used instead of provisioning a new volume.   
 
-## Managing SnappyData in Kubernetes
-
-### Backup and Restore
-
-### Using other Snappy commands 
-Document those that are applicable and tested.
- 
-stats, merge-logs, validate-disk-store, compact-disk-store, compact-all-disk-stores, revoke-missing-disk-store, unblock-disk-store, 
-modify-disk-store, show-disk-store-metadata, shut-down-all, print-stacks, run, install-jar, replace-jar, remove-jar
 
 ## Future work
-Any features that not currently implemented but are planned
 
+In future we plan to enable 
+ - Backup and Restore in K8s environment
+ - Snappy commands such as validate-disk-store, compact-disk-store, compact-all-disk-stores, 
+   revoke-missing-disk-store, unblock-disk-store, modify-disk-store, show-disk-store-metadata etc.
+ 
+<!---
 ## Troubleshooting
+--->
 
