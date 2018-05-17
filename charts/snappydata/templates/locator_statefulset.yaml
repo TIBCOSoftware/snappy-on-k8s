@@ -1,0 +1,89 @@
+#############################
+# Statefulset for locators
+#############################
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "{{ .Release.Name }}-locator"
+#  TODO: Do we need to change, for example like the one given below?
+#  name: {{ template "snappydata.fullname" . }}
+  labels:
+    app: {{ template "snappydata.name" . }}
+    chart: {{ template "snappydata.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  serviceName: "{{ .Release.Name }}-locator"
+  replicas: {{ .Values.locators.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: "{{ .Release.Name }}-locator"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Release.Name }}-locator"
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: "{{ .Release.Name }}-locator"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 10334
+          name: locator
+        - containerPort: 1527
+          name: jdbc
+     # primitive liveness probe .. only useful when the JVM crashes
+        livenessProbe:
+          tcpSocket:
+            port: 1527
+          initialDelaySeconds: {{ .Values.locators.initialDelaySeconds | default 80 }}
+        command:
+          - "/bin/bash"
+          - "-c"
+          - >
+            cp /snappy_conf/* /opt/snappydata/conf;
+
+            SNAPPY_STARTUP_CONF={{ .Values.locators.conf | default "" }};
+            echo "Executing command: start locator $SNAPPY_STARTUP_CONF";
+
+            start locator $SNAPPY_STARTUP_CONF;
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/opt/snappydata/sbin/snappy-locators.sh", "stop"]
+        resources:
+{{ toYaml .Values.locators.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+        volumeMounts:
+        - mountPath: "/opt/snappydata/work"
+          name: snappy-disk-claim
+        - mountPath: /snappy_conf
+          name: snappy-config-properties
+      volumes:
+        - name: snappy-config-properties
+          configMap:
+            name: {{ .Release.Name }}-configmap
+
+  volumeClaimTemplates:
+  - metadata:
+      name: snappy-disk-claim
+    spec:
+      accessModes: [ {{ .Values.locators.persistence.accessMode | quote }} ]
+      resources:
+        requests:
+          storage: {{ .Values.locators.persistence.size | quote }}
+{{- if .Values.locators.persistence.storageClass }}
+      storageClassName: {{ .Values.locators.persistence.storageClass | quote }}
+{{- end }}

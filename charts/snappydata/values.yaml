@@ -1,0 +1,77 @@
+# Default values for snappydata.
+# This is a YAML-formatted file.
+
+image:
+  repository: snappydatainc/snappydata
+  tag: 1.0.1.1-test
+  pullPolicy: IfNotPresent
+
+locators:
+  ## config options for locators
+  conf: ""
+  resources:
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    requests:
+    #  cpu: 100m
+      memory: 1024Mi
+  ## PV configuration
+  persistence:
+    ## Use 'storageClass' to specify the storageClassName to be used while dynamically provisioning volumes
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, Azure & OpenStack)
+    ##
+    # storageClass:
+    accessMode: ReadWriteOnce
+    size: 10Gi
+
+servers:
+  replicaCount: 2
+  ## config options for servers
+  conf: ""
+  resources:
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    requests:
+    #  cpu: 100m
+      memory: 4096Mi
+  ## PV configuration
+  persistence:
+    ## Use 'storageClass' to specify the storageClassName to be used while dynamically provisioning volumes
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, Azure & OpenStack)
+    ##
+    # storageClass:
+    accessMode: ReadWriteOnce
+    size: 10Gi
+
+leaders:
+  ## config options for leaders
+  conf: "-zeppelin.interpreter.enable=true"
+  resources:
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    requests:
+    #  cpu: 100m
+      memory: 4096Mi
+  ## PV configuration
+  persistence:
+    ## Use 'storageClass' to specify the storageClassName to be used while dynamically provisioning volumes
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, Azure & OpenStack)
+    ##
+    # storageClass:
+    accessMode: ReadWriteOnce
+    size: 10Gi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

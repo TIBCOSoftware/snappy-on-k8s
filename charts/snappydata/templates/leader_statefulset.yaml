@@ -1,0 +1,89 @@
+#############################
+# Statefulset for leaders
+#############################
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "{{ .Release.Name }}-leader"
+#  TODO: Do we need to change, for example like the one given below?
+#  name: {{ template "snappydata.fullname" . }}
+  labels:
+    app: {{ template "snappydata.name" . }}
+    chart: {{ template "snappydata.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  serviceName: "{{ .Release.Name }}-leader"
+  replicas: {{ .Values.leaders.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: "{{ .Release.Name }}-leader"
+  template:
+    metadata:
+      labels:
+        app: "{{ .Release.Name }}-leader"
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: "{{ .Release.Name }}-leader"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 5050
+          name: sparkui
+        livenessProbe:
+          tcpSocket:
+            port: 5050
+#         initial delay intentionally kept large, as lead waits(250 seconds) for servers to be available
+          initialDelaySeconds: {{ .Values.leaders.initialDelaySeconds | default 360 }}
+        command:
+          - "/bin/bash"
+          - "-c"
+          - >
+            cp /snappy_conf/* /opt/snappydata/conf;
+
+            WAIT_FOR_SERVICE_ARG="--get-ip {{ .Release.Name }}-leader-public --wait-for {{ .Release.Name }}-server 1527";
+            USER_PROVIDED_STARTUP_CONF={{ .Values.leaders.conf | default "" }};
+            SNAPPY_STARTUP_CONF="-locators={{ .Release.Name }}-locator:10334 $USER_PROVIDED_STARTUP_CONF";
+            echo "Executing command: start lead $WAIT_FOR_SERVICE_ARG $SNAPPY_STARTUP_CONF";
+
+            start lead $WAIT_FOR_SERVICE_ARG $SNAPPY_STARTUP_CONF;
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/opt/snappydata/sbin/snappy-leads.sh", "stop"]
+        resources:
+{{ toYaml .Values.leaders.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+        volumeMounts:
+        - mountPath: "/opt/snappydata/work"
+          name: snappy-disk-claim
+        - mountPath: /snappy_conf
+          name: snappy-config-properties
+      volumes:
+        - name: snappy-config-properties
+          configMap:
+            name: {{ .Release.Name }}-configmap
+
+  volumeClaimTemplates:
+  - metadata:
+      name: snappy-disk-claim
+    spec:
+      accessModes: [ {{ .Values.leaders.persistence.accessMode | quote }} ]
+      resources:
+        requests:
+          storage: {{ .Values.leaders.persistence.size | quote }}
+{{- if .Values.leaders.persistence.storageClass }}
+      storageClassName: {{ .Values.leaders.persistence.storageClass | quote }}
+{{- end }}
