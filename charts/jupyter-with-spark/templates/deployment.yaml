@@ -46,6 +46,7 @@ spec:
               echo "spark.kubernetes.executor.podNamePrefix        spark-$prefix" >> /opt/spark/conf/spark-defaults.conf;
               echo "spark.kubernetes.authenticate.driver.serviceAccountName {{ .Values.global.serviceAccount | default .Values.serviceAccount }}" >> /opt/spark/conf/spark-defaults.conf;
               echo "spark.ui.port                                  {{ .Values.jupyterService.sparkUIPort }}" >> /opt/spark/conf/spark-defaults.conf;
+              echo "spark.kubernetes.namespace                     {{ .Release.Namespace }}" >> /opt/spark/conf/spark-defaults.conf;
             {{- if .Values.sparkEventLog.enableHistoryEvents }}
               echo "spark.eventLog.enabled                         true" >> /opt/spark/conf/spark-defaults.conf;
               echo "spark.eventLog.dir                             {{ .Values.sparkEventLog.eventLogDir }}" >> /opt/spark/conf/spark-defaults.conf;

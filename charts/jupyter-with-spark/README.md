@@ -17,7 +17,7 @@
 
 ```bash
   $ git clone https://github.com/SnappyDataInc/spark-on-k8s
-  $ helm install --name jupyter ./spark-on-k8s/charts/jupyter-with-spark/
+  $ helm install --name jupyter --namespace spark ./spark-on-k8s/charts/jupyter-with-spark/
 ```
 
   The above command will deploy the helm chart and will display instructions to access Jupyter service and Spark UI.
@@ -166,5 +166,5 @@ print("Pi is roughly %f" % (4.0 * count / n))
    For example: 
    ```
    # set an attribute while using helm install command
-   helm install --name jupyter --set serviceAccount=spark ./jupyter-with-spark
+   helm install --name jupyter --namespace spark --set serviceAccount=spark ./jupyter-with-spark
    ```

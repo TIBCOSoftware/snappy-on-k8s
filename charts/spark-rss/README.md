@@ -13,7 +13,7 @@ LoadBalancer to access it.
     For example:
 
     ```
-    helm install --name rss ./spark-rss/
+    helm install --name rss --namespace spark ./spark-rss/
     ```
     
     The above command will display output such as given below:
@@ -34,7 +34,7 @@ LoadBalancer to access it.
    values.yaml and specify the service.type value as "NodePort"
      
      ```
-     helm install --name rss --set service.type=NodePort ./spark-rss/
+     helm install --name rss --namespace spark --set service.type=NodePort ./spark-rss/
      ```
      
      The above command will display output such as given below:
@@ -59,7 +59,7 @@ Given below is an example spark-submit command that uses resource staging server
       --deploy-mode cluster \
       --class org.apache.spark.examples.SparkPi \
       --master k8s://<k8s-apiserver-host>:<k8s-apiserver-port> \
-      --kubernetes-namespace default \
+      --conf spark.kubernetes.shuffle.namespace=spark
       --conf spark.executor.instances=5 \
       --conf spark.app.name=spark-pi \
       --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 \
@@ -98,5 +98,5 @@ These configuration attributes can be set in the `values.yaml` file or while usi
 
 ```
 # set an attribute while using helm install command
-helm install --name rss --set serviceAccount=spark ./spark-rss
+helm install --name rss --namespace spark --set serviceAccount=spark ./spark-rss
 ```
