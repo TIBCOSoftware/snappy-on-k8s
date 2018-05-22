@@ -78,7 +78,7 @@ can list these resources by running `kubectl auth can-i <list|create|edit|delete
 if you are using `default` service account, assign 'edit' role to it for namespace 'spark' by using following command
 
 ```text
-kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=spark:default --namespace=spark
+kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=spark:default
 ```
 <!--- TODO Why is this required?
 - You must have Kubernetes DNS configured in your cluster.
@@ -392,17 +392,19 @@ the cluster.
 #### Configuring Service Account
 When Kubernetes [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) is enabled,
 the `default` service account used by the driver may not have appropriate pod `edit` permissions
-for launching executor pods. We recommend to add another service account, say `spark`, with
+for launching executor pods. We recommend to add another service account, say `sparkjob`, with
 the necessary privilege. For example:
 
-    kubectl create serviceaccount spark
-    kubectl create clusterrolebinding spark-edit --clusterrole edit  \
-        --serviceaccount spark:spark --namespace spark
+    kubectl create serviceaccount sparkjob
+    kubectl create clusterrolebinding spark-edit --clusterrole edit --serviceaccount spark:sparkjob 
 
+In the above command, `--serviceaccount` option accepts value of the format 'namespace:serviceAccount'. Here we have 
+assigned `edit` role to `sparkjob` service account for namespace called `spark`
+ 
 One can then modify `global` section in values.yaml file to specify the service account to use. 
 
     global:
-      serviceAccount: spark
+      serviceAccount: sparkjob
 
 ### Dependency Management
 

@@ -81,7 +81,7 @@ Spark history server UI to view the job execution details.
       --master k8s://https://<k8s-master-IP> \
       --deploy-mode cluster \
       --name spark-pi \
-      --conf spark.kubernetes.shuffle.namespace=spark \
+      --conf spark.kubernetes.namespace=spark \
       --class org.apache.spark.examples.SparkPi \
       --conf spark.eventLog.enabled=true \
       --conf spark.eventLog.dir=gs://spark-history-server/ \
