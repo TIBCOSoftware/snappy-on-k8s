@@ -9,7 +9,7 @@ This chart launches Spark shuffle service as a daemonset on Kubernetes. Spark sh
 To install the chart use following command:
 
   ```
-  $ helm install --name example-shuffle ./spark-shuffle/
+  $ helm install --name example-shuffle --namespace spark ./spark-shuffle/
   ```
 
 Above command will deploy the chart and display labels attached to the Shuffle pods in 'NOTES'.
@@ -31,14 +31,13 @@ For example in values.yaml of [spark-k8s-zeppelin chart](https://github.com/Snap
 
 ```
   SPARK_SUBMIT_OPTIONS: >-
-     --kubernetes-namespace default
      --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
      --conf spark.driver.cores="300m"
      --conf spark.local.dir=/tmp/spark-local
      --conf spark.dynamicAllocation.enabled=true
      --conf spark.shuffle.service.enabled=true
-     --conf spark.kubernetes.shuffle.namespace=default
+     --conf spark.kubernetes.shuffle.namespace=spark
      --conf spark.kubernetes.shuffle.labels="app=spark-shuffle-service,spark-version=2.2.0"
      --conf spark.dynamicAllocation.initialExecutors=0
      --conf spark.dynamicAllocation.minExecutors=1
@@ -62,6 +61,6 @@ These configuration attributes can be set in the `values.yaml` file or while usi
 
 ```
 # set an attribute while using helm install command
-helm install --name shuffle --set serviceAccount=spark ./spark-shuffle
+helm install --name shuffle --namespace spark --set serviceAccount=spark ./spark-shuffle
 ```
   

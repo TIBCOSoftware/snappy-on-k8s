@@ -74,11 +74,11 @@ instructions for setting up Google Cloud SDK ('gcloud') along with kubectl
 [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 - You must have appropriate permissions to list, create, edit and delete pods in your cluster. You can verify that you 
 can list these resources by running `kubectl auth can-i <list|create|edit|delete> pods`.
-- The service account credentials used by the driver pods must be allowed to create pods, services and configmaps. For example, if you are using `default` 
-service account, assign 'edit' role to it by using following command
+- The service account credentials used by the driver pods must be allowed to create pods, services and configmaps. For example, 
+if you are using `default` service account, assign 'edit' role to it for namespace 'spark' by using following command
 
 ```text
-kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:default --namespace=default
+kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=spark:default
 ```
 <!--- TODO Why is this required?
 - You must have Kubernetes DNS configured in your cluster.
@@ -113,8 +113,8 @@ git clone https://github.com/SnappyDataInc/spark-on-k8s
 cd charts
 helm dep up spark-umbrella
 
-# Now, install the chart
-helm install --name spark-all ./spark-umbrella/
+# Now, install the chart in a namespace called 'spark'
+helm install --name spark-all --namespace spark ./spark-umbrella/
 ```
 The above command will deploy the helm chart and will display instructions to access Zeppelin service and Spark UI.
 
@@ -122,14 +122,13 @@ The above command will deploy the helm chart and will display instructions to ac
 specified in the chart. The command below can be used to access the notebook environment from any browser. 
 
 ```text
-kubectl get services -w
+kubectl get services --namespace spark -w
 # Note: this could take a while to complete. Use '-w' option to wait for state changes. 
 ```
 
 Once everything is up and running you will see something like this:
 ```text
 NAME                          TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)                        AGE
-kubernetes                    ClusterIP      10.63.240.1     <none>          443/TCP                        1d
 spark-all-jupyter-spark       LoadBalancer   10.63.246.130   35.184.71.164   8888:31540/TCP,4040:30922/TCP  9m
 spark-all-rss                 LoadBalancer   10.63.246.190   35.192.235.35   10000:31000/TCP                9m
 spark-all-zeppelin            LoadBalancer   10.63.254.150   35.192.68.147   8080:30522/TCP,4040:31236/TCP  9m
@@ -158,15 +157,16 @@ The spark distribution with support for kubernetes can be downloaded
 [here](https://github.com/apache-spark-on-k8s/spark/releases/tag/v2.2.0-kubernetes-0.5.0)
 
 We will use spark-submit from this distribution to deploy a batch job. Example below runs the built in SparkPi job. 
-The 'local://' URL will result in looking for the JAR in the launched container. 
+The 'local://' URL will result in looking for the JAR in the launched container. spark.kubernetes.namespace option 
+indicates the namespace in which the Spark job will be executed.
 
 ```text
 # Find your Kubernetes Master server IP using 'kubectl cluster-info' and port number. Substitute below. 
- bin/spark-submit --master k8s://https://K8S-API-SERVER-IP:PORT --deploy-mode cluster --name spark-pi \
- --class org.apache.spark.examples.SparkPi --conf spark.executor.instances=1 --conf spark.app.name=spark-pi \
- --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 \
+bin/spark-submit --master k8s://https://K8S-API-SERVER-IP:PORT --deploy-mode cluster --name spark-pi \
+ --class org.apache.spark.examples.SparkPi --conf spark.kubernetes.namespace=spark --conf spark.executor.instances=1 \ 
+ --conf spark.app.name=spark-pi --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 \
  --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1 \
-  local:///opt/spark/examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar 
+  local:///opt/spark/examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar
 ```
 > If you face OAuth token expiry errors when you run spark-submit, it is likely because the token needs to be refreshed.
  The easiest way to fix this is to run any kubectl command, say, kubectl version and then retry your submission.
@@ -227,8 +227,7 @@ cp sparkonk8s-test.json spark-umbrella/conf/secrets/
 ```
 
 By default, umbrella chart does not deploy the History server. We enable the History server deployment by modifying the
-'values.yaml' file(in the zeppelin-with-spark folder). We also specify the GCS bucket path created above. 
-History server will read spark events from this path.  
+'values.yaml' file. We also specify the GCS bucket path created above. History server will read spark events from this path.  
 
 ```text
 historyserver:
@@ -252,7 +251,6 @@ zeppelin:
 
   environment:
     SPARK_SUBMIT_OPTIONS: >-
-       --kubernetes-namespace default
        --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
        --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
        --conf spark.executor.instances=2
@@ -283,6 +281,7 @@ Once job finishes, use the Spark history server UI to view the job execution det
       --master k8s://https://<k8s-master-IP> \
       --deploy-mode cluster \
       --name spark-pi \
+      --conf spark.kubernetes.namespace=spark \
       --class org.apache.spark.examples.SparkPi \
       --conf spark.eventLog.enabled=true \
       --conf spark.eventLog.dir=gs://spark-history-server-store/ \
@@ -393,17 +392,19 @@ the cluster.
 #### Configuring Service Account
 When Kubernetes [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) is enabled,
 the `default` service account used by the driver may not have appropriate pod `edit` permissions
-for launching executor pods. We recommend to add another service account, say `spark`, with
+for launching executor pods. We recommend to add another service account, say `sparkjob`, with
 the necessary privilege. For example:
 
-    kubectl create serviceaccount spark
-    kubectl create clusterrolebinding spark-edit --clusterrole edit  \
-        --serviceaccount default:spark --namespace default
+    kubectl create serviceaccount sparkjob
+    kubectl create clusterrolebinding spark-edit --clusterrole edit --serviceaccount spark:sparkjob 
 
+In the above command, `--serviceaccount` option accepts value of the format 'namespace:serviceAccount'. Here we have 
+assigned `edit` role to `sparkjob` service account for namespace called `spark`
+ 
 One can then modify `global` section in values.yaml file to specify the service account to use. 
 
     global:
-      serviceAccount: spark
+      serviceAccount: sparkjob
 
 ### Dependency Management
 
@@ -419,8 +420,8 @@ We will use spark-submit from this distribution to deploy a batch job. Example b
     bin/spark-submit \
       --deploy-mode cluster \
       --class org.apache.spark.examples.SparkPi \
-      --master k8s://<k8s-apiserver-host>:<k8s-apiserver-port> \
-      --kubernetes-namespace default \
+      --master k8s://https://<k8s-master-IP> \
+      --conf spark.kubernetes.namespace=spark \
       --conf spark.executor.instances=5 \
       --conf spark.app.name=spark-pi \
       --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 \
@@ -459,8 +460,8 @@ job launch time. In order to run a job with dynamic allocation enabled, the comm
   bin/spark-submit \
     --deploy-mode cluster \
     --class org.apache.spark.examples.GroupByTest \
-    --master k8s://<k8s-master>:<port> \
-    --kubernetes-namespace default \
+    --master k8s://https://<k8s-master-IP> \
+    --conf spark.kubernetes.namespace=spark \
     --conf spark.app.name=group-by-test \
     --conf spark.local.dir=/tmp/spark-local \
     --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 \
@@ -477,14 +478,13 @@ SPARK_SUBMIT_OPTIONS accordingly. For example,
 
 ```
   SPARK_SUBMIT_OPTIONS: >-
-     --kubernetes-namespace default
      --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
      --conf spark.local.dir=/tmp/spark-local
      --conf spark.driver.cores="300m"
      --conf spark.dynamicAllocation.enabled=true
      --conf spark.shuffle.service.enabled=true
-     --conf spark.kubernetes.shuffle.namespace=default
+     --conf spark.kubernetes.shuffle.namespace=spark
      --conf spark.kubernetes.shuffle.labels="app=spark-shuffle-service,spark-version=2.2.0"
      --conf spark.dynamicAllocation.initialExecutors=0
      --conf spark.dynamicAllocation.minExecutors=1
@@ -500,12 +500,12 @@ the `persistence.existingClaim` field of the Zeppelin/Jupyter configuration when
 
 For example, if you deploy the umbrella chart as follows:
 ```
-  helm install --name spark-all ./spark-umbrella
+  helm install --name spark-all --namespace spark ./spark-umbrella
 ```
 This deployment will create two PVCs and dynamically provision volumes for those.
 
 ```
-  $ kubectl get pvc
+  $ kubectl get pvc --namespace=spark
   NAME                                     STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
   spark-all-jupyter                        Bound     pvc-4dc8dbc2-4931-11e8-86bc-42010a800173   6Gi        RWO            standard       2m
   spark-all-zeppelin                       Bound     pvc-4dc9b4cd-4931-11e8-86bc-42010a800173   8Gi        RWO            standard       2m
@@ -543,13 +543,13 @@ Similarly for Jupyter
 
 Deploy the umbrella chart again and the same volumes will be bound again:
 ```
-  helm install --name spark-all ./spark-umbrella
+  helm install --name spark-all --namespace spark ./spark-umbrella
 ```
 
 Note that if you do not specify the `persistence.existingClaim` fields and the PVC already exists, the chart will error out
 
 ```
-  $ helm install --name spark-all ./spark-umbrella/
+  $ helm install --name spark-all --namespace spark ./spark-umbrella/
   Error: release spark-all failed: persistentvolumeclaims "spark-all-jupyter" already exists
 ```
 

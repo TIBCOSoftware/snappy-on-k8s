@@ -36,7 +36,7 @@ helm init --service-account tiller --upgrade
 ```
   $ git clone https://github.com/SnappyDataInc/spark-on-k8s
   $ cd charts
-  $ helm install --name example ./zeppelin-with-spark/
+  $ helm install --name example --namespace spark ./zeppelin-with-spark/
 ```
 The above command will deploy the helm chart and will display instructions to access Zeppelin service and Spark UI.
 
@@ -46,7 +46,7 @@ service account may or may not have the role that allows driver pods to create p
 Without appropriate role the notebook may fail with a NullPointerException. You may have to grant the default 
 service account appropriate permissions, for example:
  ```
- kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:default --namespace=default
+ kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=spark:default --namespace=spark
  ```
  If you want to use a different service account instead of default, you can specify it in the values.yaml file.
  
@@ -98,7 +98,6 @@ Here we list steps to configure Spark event logging on Google Cloud Storage
 	environment:
 	# Provide configuration parameters, use syntax as expected by spark-submit
 	SPARK_SUBMIT_OPTIONS: >-
-	  --kubernetes-namespace default
 	  --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
 	  --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
 	  --conf spark.executor.instances=2
@@ -171,7 +170,6 @@ variables in the `environment` section.  For example,
 environment:
   # Provide configuration parameters, use syntax as expected by spark-submit
   SPARK_SUBMIT_OPTIONS: >-
-     --kubernetes-namespace default
      --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
      --conf spark.executor.instances=2
@@ -212,7 +210,6 @@ the `environment` section.  For example,
 environment:
   # Provide configuration parameters, use syntax as expected by spark-submit
   SPARK_SUBMIT_OPTIONS: >-
-     --kubernetes-namespace default
      --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
      --conf spark.executor.instances=2
@@ -269,6 +266,6 @@ These configuration attributes can be set in the `values.yaml` file or while usi
 
 ```
 # set an attribute while using helm install command
-helm install --name zeppelin --set serviceAccount=spark ./zeppelin-with-spark
+helm install --name zeppelin --namespace spark --set serviceAccount=spark ./zeppelin-with-spark
 ```
  

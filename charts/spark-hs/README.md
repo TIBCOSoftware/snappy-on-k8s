@@ -61,7 +61,7 @@ admin permission to bucket gs://spark-history-server.
 
 4.  Install the chart
     ```
-    helm install --name history ./spark-hs/
+    helm install --name history --namespace spark ./spark-hs/
     ```
     
     Spark History UI URL can now be accessed as follows:
@@ -81,6 +81,7 @@ Spark history server UI to view the job execution details.
       --master k8s://https://<k8s-master-IP> \
       --deploy-mode cluster \
       --name spark-pi \
+      --conf spark.kubernetes.namespace=spark \
       --class org.apache.spark.examples.SparkPi \
       --conf spark.eventLog.enabled=true \
       --conf spark.eventLog.dir=gs://spark-history-server/ \
