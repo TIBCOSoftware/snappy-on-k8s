@@ -81,7 +81,6 @@ The following table lists the configuration parameters available for this chart
 
 | Parameter               | Description                        | Default                                                    |
 | ----------------------- | ---------------------------------- | ---------------------------------------------------------- |
-| `replicaCount`          |  No of replicas of Resource Staging Server |     `1`                                            |
 | `image.repository`      |  Docker repo for the image         |     `SnappyDataInc`                                        |
 | `image.tag`             |  Tag for the Docker image          |     `spark-resource-staging-server:v2.2.0-kubernetes-0.5.1`        | 
 | `image.pullPolicy`      |  Pull policy for the image         |     `IfNotPresent`                                         |

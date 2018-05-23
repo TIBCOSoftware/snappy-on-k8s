@@ -1,8 +1,6 @@
 # Default values for jupyter-with-spark helm chart.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-
 image:
   repository: snappydatainc/jupyter-notebook
   tag: 5.2.2-spark-v2.2.0-kubernetes-0.5.1
