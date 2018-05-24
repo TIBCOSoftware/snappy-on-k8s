@@ -239,7 +239,6 @@ The following table lists the configuration parameters available for this chart
 
 | Parameter               | Description                        | Default                                                    |
 | ----------------------- | ---------------------------------- | ---------------------------------------------------------- |
-| `replicaCount`          |  No of replicas of Zeppelin server |     `1`                                                    |
 | `image.repository`      |  Docker repo for the image         |     `SnappyDataInc`                                        |
 | `image.tag`             |  Tag for the Docker image          |     `zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.0`         | 
 | `image.pullPolicy`      |  Pull policy for the image         |     `IfNotPresent`                                         |

@@ -141,7 +141,6 @@ print("Pi is roughly %f" % (4.0 * count / n))
    
    | Parameter               | Description                           | Default                                     |
    | ----------------------- | ------------------------------------- | ------------------------------------------- |
-   | `replicaCount`          |  Number of replicas of Jupyter server |     `1`                                     |
    | `image.repository`      |  Docker repo/name for the image       |     `SnappyDataInc/jupyter-notebook`        |
    | `image.tag`             |  Tag for the Docker image             |     `5.2.2-spark-v2.2.0-kubernetes-0.5.1`   | 
    | `image.pullPolicy`      |  Pull policy for the image            |     `IfNotPresent`                          |
