@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: snappydatainc
-  tag: zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.1-test
+  tag: zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.1-test.1
   pullPolicy: IfNotPresent
 
 zeppelinService:

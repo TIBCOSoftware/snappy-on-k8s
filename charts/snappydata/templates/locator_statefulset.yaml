@@ -44,7 +44,7 @@ spec:
           - >
             cp /snappy_conf/* /opt/snappydata/conf;
 
-            SNAPPY_STARTUP_CONF={{ .Values.locators.conf | default "" }};
+            SNAPPY_STARTUP_CONF={{ .Values.locators.conf | default "" | quote }};
             echo "Executing command: start locator $SNAPPY_STARTUP_CONF";
 
             start locator $SNAPPY_STARTUP_CONF;
