@@ -15,7 +15,7 @@ These have been committed into a clone of branch-2.2-kubernetes branch in above 
 Get the latest branch:
 
 ```bash
-$ git clone https://github.com/SnappyDataInc/spark-on-k8s.git -b snappy/branch-2.2-kubernetes
+$ git clone https://github.com/SnappyDataInc/spark.git -b snappy/branch-2.2-kubernetes
 ```
 
 Go to the checkout directory and build the project using [maven](https://maven.apache.org/install.html).

@@ -1,0 +1,3 @@
+- name: "small"
+  description: "default (small) plan for snappydata"
+  file: "small.yaml"
