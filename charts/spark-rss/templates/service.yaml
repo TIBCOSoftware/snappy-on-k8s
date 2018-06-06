@@ -15,7 +15,7 @@ spec:
       protocol: TCP
       {{ if eq .Values.service.type "NodePort" -}}
       nodePort: {{ .Values.service.nodePort }}
-      {{- end -}}
+      {{ end -}}
       name: rssport
   selector:
     app: {{ template "spark-rss.name" . }}
