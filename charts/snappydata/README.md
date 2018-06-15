@@ -4,7 +4,7 @@
 [SnappyData](http://www.snappydata.io) fuses Apache Spark with an in-memory database to deliver a compute+data engine capable of 
 stream processing, transactions, interactive analytics and prediction in a single cluster.
 
-## SnappyData Features
+## Key SnappyData Features on top of Spark
 
 - High concurrency
 - Low latency, true interactive speeds
