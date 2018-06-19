@@ -1,8 +1,8 @@
 ---
 name: snappydata
 icon_file: icon.png
-label: SnappyData on PKS
-description: SnappyData on PKS Tile
+label: SnappyData On PKS
+description: Test tile for Kibosh with SnappyData Helm chart
 
 packages:
 - name: snappydata
