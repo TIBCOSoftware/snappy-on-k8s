@@ -1,0 +1,10 @@
+---
+name: snappydata
+icon_file: icon.png
+label: SnappyData on PKS
+description: SnappyData on PKS Tile
+
+packages:
+- name: snappydata
+  type: kibosh
+  helm_chart_dir: ../../charts/snappydata
