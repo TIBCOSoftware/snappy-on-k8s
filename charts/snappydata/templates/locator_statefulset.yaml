@@ -24,6 +24,7 @@ spec:
         app: "{{ .Release.Name }}-locator"
         release: {{ .Release.Name }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 10 }}
       containers:
       - name: "{{ .Release.Name }}-locator"
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

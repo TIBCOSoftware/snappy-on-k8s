@@ -24,6 +24,7 @@ spec:
         app: "{{ .Release.Name }}-server"
         release: {{ .Release.Name }}
     spec:
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 10 }}
       containers:
       - name: "{{ .Release.Name }}-server"
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
