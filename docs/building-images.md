@@ -92,3 +92,36 @@ For example:
 $ docker build -t snappydatainc/zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.1 -f Dockerfile .
 $ docker push snappydatainc/zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.1
 ```
+
+## SnappyData Image
+
+The SnappyData Docker image available on DockerHub is built using the OSS version of the product. Docker image with
+SnappyData Enterprise bits will be available soon.
+
+Currently, some manual steps are needed to build this image which will be automated later.
+
+Download the Snappydata OSS tarball of the version you need and available on
+[GitHub releases page](https://github.com/snappydatainc/snappydata/releases) and extract its content into a directory.
+
+Copy the Dockerfile and start script required for SnappyData image
+[from this branch](https://github.com/SnappyDataInc/snappy-cloud-tools/blob/SNAP-2280/docker) into the extracted
+SnappyData directory. Also, copy the
+[SnappyData interpreter jar](https://github.com/SnappyDataInc/zeppelin-interpreter/releases) for Apache Zeppelin into
+the jars directory.
+
+Optionally, one can also add the third party jar needed to access GCS to the jars directory. The libraries to access AWS
+S3 and HDFS are already included.
+
+Switch to the extracted directory to build and publish the SnappyData image.
+
+```bash
+$ cd <extracted-snappydata-directory>
+$ docker build -t <your-docker-repo-name>/snappydata:<image-tag> -f Dockerfile .
+$ docker push <your-docker-repo-name>/snappydata:<image-tag>
+```
+
+For example:
+```bash
+$ docker build -t snappydatainc/snappydata:1.0.1 -f Dockerfile .
+$ docker push snappydatainc/snappydata:1.0.1
+```
