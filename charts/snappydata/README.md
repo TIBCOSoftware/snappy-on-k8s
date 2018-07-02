@@ -23,7 +23,6 @@ stream processing, transactions, interactive analytics and prediction in a singl
 
 ## Pre-requisites and assumptions:
 - We need a running kubernetes or PKS cluster. We only support Kubernetes 1.9 (or higher) and PKS 1.0.0(or higher).
-- You must have appropriate role for the K8S service account you are using *[details to be added here]*
 - You must have Helm deployed. Follow the steps given below if Helm is not deployed in your Kubernetes environment
 
 ### Setup Helm charts
@@ -143,9 +142,13 @@ connections. For example from the above output the JDBC URL to be used will be  
 >Note: Refer to [SnappyData documentation](http://snappydatainc.github.io/snappydata/howto/connect_using_jdbc_driver/) for 
 example JDBC program and how to obtain JDBC driver using Maven/SBT co-ordinates 
 
+<!--- TODO: Point SnappyData docs?
 ### Using SnappyData with Zeppelin
+--->
 
+<!--- TODO 
 ### Using Spark shell
+--->
 
 ### Submitting a SnappyData job
 
