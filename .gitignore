@@ -1,2 +1,7 @@
 .idea/
 *.iml
+
+tiles/snappydata/product/
+tiles/snappydata/release/
+tiles/snappydata/tile-history.yml
+
