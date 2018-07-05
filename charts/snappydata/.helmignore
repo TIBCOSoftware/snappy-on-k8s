@@ -19,3 +19,8 @@
 .project
 .idea/
 *.tmproj
+
+# PAS tile specific artifacts
+images/
+plans/
+plans.yaml

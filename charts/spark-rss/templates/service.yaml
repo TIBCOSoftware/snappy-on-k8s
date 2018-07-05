@@ -13,7 +13,9 @@ spec:
     - port: {{ .Values.service.externalPort }}
       targetPort: {{ .Values.service.internalPort }}
       protocol: TCP
+      {{ if eq .Values.service.type "NodePort" -}}
       nodePort: {{ .Values.service.nodePort }}
+      {{ end -}}
       name: rssport
   selector:
     app: {{ template "spark-rss.name" . }}

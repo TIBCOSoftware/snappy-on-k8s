@@ -1,2 +1,6 @@
 .idea/
 *.iml
+
+tiles/snappydata/product/
+tiles/snappydata/release/
+

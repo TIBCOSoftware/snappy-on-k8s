@@ -1,0 +1,24 @@
+#############################
+# Specific to PCF tile
+#############################
+locators:
+  resources:
+    requests:
+      memory: 1024Mi
+  persistence:
+    size: 10Gi
+
+servers:
+  replicaCount: 2
+  resources:
+    requests:
+      memory: 2048Mi
+  persistence:
+    size: 10Gi
+
+leaders:
+  resources:
+    requests:
+      memory: 2048Mi
+  persistence:
+    size: 10Gi

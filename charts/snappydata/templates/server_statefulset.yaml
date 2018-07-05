@@ -27,8 +27,8 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 10 }}
       containers:
       - name: "{{ .Release.Name }}-server"
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        image: "{{ .Values.image }}:{{ .Values.imageTag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         # Even servers use the same port as locator ... all run on independent pods
         # ... and, the service will either roundrobin or loadbalance
         ports:
