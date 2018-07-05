@@ -1,3 +1,6 @@
+#############################
+# Specific to PCF tile
+#############################
 - name: "small"
   description: "default (small) plan for snappydata cluster"
   file: "small.yaml"

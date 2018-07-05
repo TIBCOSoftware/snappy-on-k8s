@@ -1,3 +1,6 @@
+#############################
+# Specific to PCF tile
+#############################
 locators:
   resources:
     requests:
