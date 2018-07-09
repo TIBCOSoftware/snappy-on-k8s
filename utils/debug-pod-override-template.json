@@ -1,0 +1,33 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "labels": {
+            "run": "snappy-debug-pod"
+        },
+        "name": "snappy-debug-pod",
+        "namespace": "spark"
+    },
+    "spec": {
+        "containers": [
+            {
+                "args": [
+                    "bash"
+                ],
+                IMAGE_MARKER
+                "imagePullPolicy": "IfNotPresent",
+                "name": "snappy-debug-pod",
+                "stdin": true,
+                "stdinOnce": true,
+                "tty": true,
+                "volumeMounts": [
+                    VOLUME_MOUNTS_MARKER
+                ]
+            }
+        ],
+        "restartPolicy": "Never",
+        "volumes": [
+             VOLUMES_MARKER
+        ]
+    }
+}
