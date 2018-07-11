@@ -32,6 +32,8 @@ the kube-system namespace. Tiller runs inside your Kubernetes cluster, and manag
 To install Helm follow the steps [here](https://docs.pivotal.io/runtimes/pks/1-0/configure-tiller-helm.html). The instructions
 are applicable for any kubernetes cluster (PKS or GKE or Minikube).
 
+*Note that the Docker image of SnappyData is built using its Open Source (OSS) version. The image of its Enterprise version will be made available soon.*
+
 ## Quickstart
 
 We use SnappyData Helm chart to deploy SnappyData on Kubernetes. Use `helm install` command to deploy the SnappyData chart
@@ -54,8 +56,19 @@ to launch locator, lead and servers. By default SnappyData helm chart will deplo
 
 You may monitor the Kubernetes UI dashboard to check the status of the components as it takes a few minutes for all 
 servers to be online. SnappyData chart provisions volumes dynamically for servers, locator and lead. These volumes and 
-the data on it will be retained even the chart deployment is deleted.
+the data on it will be retained even when the chart deployment is deleted.
 
+#### Troubleshooting tip
+
+In case the cluster or some of the member containers fail to launch successfully, users can check SnappyData cluster logs to get more details.
+
+Even if the cluster or a particular member is not running, users can access the SnappyData logs by mounting the persistent volume claims of respective member containers (locator, servers or lead) on a dumb container. We have provided an experimental scripts to do just that.
+
+The script is available [here](../../utils/snappy-debug-pod.sh). It simply takes the name(s) of the persistent volume claim(s) to be mounted and mounts it on the container as /data0 (and /data1, so on).
+
+You can find out the names of persistent volume claims on Kubernetes Dashboard or by running `kubectl get persistentvolumeclaims`.
+ 
+For more details, simply execute the script without any arguments and it'll display its usage.
 
 ### Accessing SnappyData UI
 
@@ -252,7 +265,7 @@ deploys statefulsets for servers, leaders and locators. The chart by default wil
 SnappyData servers and 1 pod each for locator and leader. Upon deletion of the Helm deployment, each pod will gracefully
 terminate the SnappyData process running on it.  
 
-### Description services that expose external endpoints
+### Description of services that expose external endpoints
 
 SnappyData Helm chart creates services in order to allow user to make JDBC connections, execute Spark jobs and access
 SnappyData UI etc.  Services of type LoadBalancer have external IP address assigned and can be used to connect from outside 
