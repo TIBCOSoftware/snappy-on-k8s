@@ -221,9 +221,9 @@ The following table lists the configuration parameters available for this chart
 
 | Parameter| Description | Default |
 | ---------| ------------| --------|
-| `image.repository` |  Docker repo from which the SnappyData Docker image will be pulled    |  `snappydatainc/snappydata`   |
-| `image.tag` |  Tag of the SnappyData Docker image to be pulled |   |
-| `image.pullPolicy` | Pull policy for the image.  | `IfNotPresent` |
+| `image` |  Docker repo from which the SnappyData Docker image will be pulled    |  `snappydatainc/snappydata`   |
+| `imageTag` |  Tag of the SnappyData Docker image to be pulled |   |
+| `imagePullPolicy` | Pull policy for the image.  | `IfNotPresent` |
 | `locators.conf` | List of configuration options to be passed to locators | |
 | `locators.resources` | Resource configuration for the locator Pods. User can configure CPU/memory requests and limits using this | `locators.requests.memory` is set to 1024Mi |
 | `locators.persistence.storageClass` | Storage class to be used while dynamically provisioning a volume | Default value is not defined so `default` storage class for the cluster will be chosen  |

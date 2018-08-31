@@ -2,7 +2,7 @@
 # This is a YAML-formatted file.
 
 image: snappydatainc/snappydata
-imageTag: 1.0.1.1-test.1
+imageTag: 1.0.2
 imagePullPolicy: IfNotPresent
 
 locators:
