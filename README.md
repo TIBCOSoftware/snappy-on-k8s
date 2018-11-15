@@ -73,7 +73,7 @@ kubectl [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/). If you 
 instructions for setting up Google Cloud SDK ('gcloud') along with kubectl 
 [here](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 - You must have appropriate permissions to list, create, edit and delete pods in your cluster. You can verify that you 
-can list these resources by running `kubectl auth can-i <list|create|edit|delete> pods`.
+can list these resources by running `kubectl auth can-i list,create,edit,delete pods`.
 - The service account credentials used by the driver pods must be allowed to create pods, services and configmaps. For example, 
 if you are using `default` service account, assign 'edit' role to it for namespace 'spark' by using following command
 
@@ -571,4 +571,4 @@ are given below.
 - [Resource Staging Server](charts/spark-rss/README.md#configuration)
 
 
- 
+
