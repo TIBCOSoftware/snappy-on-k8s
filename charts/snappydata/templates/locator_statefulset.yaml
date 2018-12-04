@@ -34,10 +34,12 @@ spec:
           name: locator
         - containerPort: 1527
           name: jdbc
-     # primitive liveness probe .. only useful when the JVM crashes
         livenessProbe:
-          tcpSocket:
-            port: 1527
+          exec:
+            command:
+             - /bin/sh
+             - -c
+             - /opt/snappydata/sbin/snappy-locators.sh status | grep -v stopped
           initialDelaySeconds: {{ .Values.locators.initialDelaySeconds | default 80 }}
         command:
           - "/bin/bash"

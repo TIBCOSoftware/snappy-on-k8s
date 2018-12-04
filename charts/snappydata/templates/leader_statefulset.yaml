@@ -33,8 +33,11 @@ spec:
         - containerPort: 5050
           name: sparkui
         livenessProbe:
-          tcpSocket:
-            port: 5050
+          exec:
+            command:
+             - /bin/sh
+             - -c
+             - /opt/snappydata/sbin/snappy-leads.sh status | grep -v stopped
 #         initial delay intentionally kept large, as lead waits(250 seconds) for servers to be available
           initialDelaySeconds: {{ .Values.leaders.initialDelaySeconds | default 360 }}
         command:
