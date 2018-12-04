@@ -39,7 +39,7 @@ spec:
             command:
              - /bin/sh
              - -c
-             - /opt/snappydata/sbin/snappy-locators.sh status | grep -v stopped
+             - /opt/snappydata/sbin/snappy-locators.sh status | grep -e running -e waiting
           initialDelaySeconds: {{ .Values.locators.initialDelaySeconds | default 80 }}
         command:
           - "/bin/bash"

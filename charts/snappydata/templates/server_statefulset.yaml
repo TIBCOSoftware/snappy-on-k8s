@@ -39,7 +39,7 @@ spec:
            command:
            - /bin/sh
            - -c
-           - /opt/snappydata/sbin/snappy-servers.sh status | grep -v stopped
+           - /opt/snappydata/sbin/snappy-servers.sh status | grep -e running -e waiting
 #         initial delay intentionally kept large, as server waits(250 seconds) for locator to be available
           initialDelaySeconds: {{ .Values.servers.initialDelaySeconds | default 360 }}
         command:

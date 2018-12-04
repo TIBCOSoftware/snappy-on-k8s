@@ -37,7 +37,7 @@ spec:
             command:
              - /bin/sh
              - -c
-             - /opt/snappydata/sbin/snappy-leads.sh status | grep -v stopped
+             - /opt/snappydata/sbin/snappy-leads.sh status | grep -e running -e waiting
 #         initial delay intentionally kept large, as lead waits(250 seconds) for servers to be available
           initialDelaySeconds: {{ .Values.leaders.initialDelaySeconds | default 360 }}
         command:
