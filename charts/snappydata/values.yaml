@@ -29,14 +29,14 @@ locators:
 servers:
   replicaCount: 2
   ## config options for servers
-  conf: ""
+  conf: "-heap-size=5g"
   resources:
     # limits:
     #  cpu: 100m
     #  memory: 128Mi
     requests:
     #  cpu: 100m
-      memory: 4096Mi
+      memory: 6144Mi
   ## PV configuration
   persistence:
     ## Use 'storageClass' to specify the storageClassName to be used while dynamically provisioning volumes
@@ -50,14 +50,14 @@ servers:
 
 leaders:
   ## config options for leaders
-  conf: "-zeppelin.interpreter.enable=true"
+  conf: "-heap-size=5g -zeppelin.interpreter.enable=true -snappydata.hiveServer.enabled=true"
   resources:
     # limits:
     #  cpu: 100m
     #  memory: 128Mi
     requests:
     #  cpu: 100m
-      memory: 4096Mi
+      memory: 6144Mi
   ## PV configuration
   persistence:
     ## Use 'storageClass' to specify the storageClassName to be used while dynamically provisioning volumes

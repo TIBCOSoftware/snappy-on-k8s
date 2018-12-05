@@ -54,6 +54,9 @@ spec:
   - port: 3768
     targetPort: 3768
     name: zeppelin-interpreter
+  - port: 10000
+    targetPort: 10000
+    name: hive-thrift-server
   type: LoadBalancer
   selector:
     app: "{{ .Release.Name }}-leader"
