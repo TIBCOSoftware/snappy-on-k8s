@@ -4,7 +4,7 @@
 
 image:
   repository: snappydatainc
-  tag: spark-init:v2.2.0-kubernetes-0.5.1
+  tag: spark:v2.4-dist
   pullPolicy: IfNotPresent
 
 service:

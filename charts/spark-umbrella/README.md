@@ -134,20 +134,17 @@ The spark-submit example below shows Spark job that logs historical events to th
 Once job finishes, use the Spark history server UI to view the job execution details.
 
   ```
-  bin/spark-submit \
-      --master k8s://https://<k8s-master-IP> \
-      --deploy-mode cluster \
-      --name spark-pi \
-      --class org.apache.spark.examples.SparkPi \
-      --conf spark.eventLog.enabled=true \
-      --conf spark.eventLog.dir=gs://spark-history-server-store/ \
-      --conf spark.executor.instances=2 \
-      --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json \
-      --conf spark.kubernetes.driver.secrets.history-secrets=/etc/secrets \
-      --conf spark.kubernetes.executor.secrets.history-secrets=/etc/secrets \
-      --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1 \
-      --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1 \
-      local:///opt/spark/examples/jars/spark-examples_2.11-2.2.0-k8s-0.5.0.jar
+   bin/spark-submit --master k8s://https://<k8s-master-IP> \
+    --deploy-mode cluster --name spark-pi --class org.apache.spark.examples.SparkPi \
+    --conf spark.kubernetes.namespace=spark \
+    --conf spark.executor.instances=2 \
+    --conf spark.kubernetes.container.image=snappydatainc/spark:v2.4-dist \
+    --conf spark.eventLog.enabled=true \
+    --conf spark.eventLog.dir=gs://spark-history-server/ \
+    --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json \
+    --conf spark.kubernetes.driver.secrets.history-secrets=/etc/secrets \
+    --conf spark.kubernetes.executor.secrets.history-secrets=/etc/secrets \
+     local:///opt/spark/examples/jars/spark-examples_2.11-2.4.0.jar
   ```
 
 #### Deleting the chart
