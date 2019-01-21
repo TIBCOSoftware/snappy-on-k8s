@@ -22,7 +22,7 @@ cd charts
 helm dep up spark-umbrella
 
 # Now, install the chart
-helm install --name spark-all ./spark-umbrella/
+helm install --name spark-all ./spark-umbrella/ --namespace spark
 ```
 
 > Note that this command will return quickly and kubernetes controllers will work in the background to achieve the state
@@ -121,7 +121,7 @@ Follow the Helm install command to launch everything. For Spark batch job (Spark
 below (you need additional configuration)
 
 ```
-helm install --name spark-all ./spark-umbrella/
+helm install --name spark-all ./spark-umbrella/ --namespace spark
 ```
 
 You can access the History server UI using URL History-server-external-IP:18080

@@ -8,11 +8,5 @@ dependencies:
 - name: jupyter-with-spark
   repository: file://../jupyter-with-spark
   version: 0.1.0
-- name: spark-rss
-  repository: file://../spark-rss
-  version: 0.1.0
-- name: spark-shuffle
-  repository: file://../spark-shuffle
-  version: 0.1.0
-digest: sha256:821eb2bc83ac2430ca9c0c259bcea7c5f7417ad58d31be672240cb04e652df62
-generated: 2018-05-11T11:47:45.512908935+05:30
+digest: sha256:325f2713e82cfe3aa54b30ac5863f8009e74f97f8f29a8e94b1664bc2b28d53a
+generated: 2019-01-21T14:47:01.318259114+05:30

@@ -15,12 +15,4 @@ dependencies:
     version: 0.1.0
     alias: jupyter
     condition: jupyter.enabled
-  - name:  spark-rss
-    repository: file://../spark-rss
-    version: 0.1.0
-    alias: rss
-  - name:  spark-shuffle
-    repository: file://../spark-shuffle
-    version: 0.1.0
-    alias: shuffle
 

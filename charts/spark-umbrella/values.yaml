@@ -136,32 +136,3 @@ historyserver:
     #  cpu: 100m
     #  memory: 128Mi
 
-##################
-# configuration for Spark Resource Staging Server
-##################
-rss:
-  # properties that can be made available via configmap
-  properties:
-      spark.ssl.kubernetes.resourceStagingServer.enabled: false
-resources: {}
-#  limits:
-#    cpu: 100m
-#    memory: 1Gi
-#  requests:
-#    cpu: 100m
-#    memory: 256Mi
-
-##################
-# configuration for Spark Shuffle Service
-##################
-shuffle:
-  shufflePodLabels:
-    app: spark-shuffle-service
-    spark-version: 2.2.0
-  resources: {}
-#    limits:
-#      cpu: 200m
-#    #  memory: 128Mi
-#    requests:
-#      cpu: 200m
-#    #  memory: 128Mi
