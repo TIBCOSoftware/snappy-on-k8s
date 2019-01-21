@@ -4,12 +4,12 @@
 ## Chart Details
 
 * This chart launches Jupyter notebook server pod and exposes Jupyter notebook as a service on port 8888.
-  * You can provide configurations for Jupyter notebook by placing your jupiter_notebook_config.py under [conf/jupyter](conf/jupyter) directory of this chart.
+  * You can provide configurations for Jupyter notebook by placing your jupyter_notebook_config.py under [conf/jupyter](conf/jupyter) directory of this chart.
 * Also, you can run your PySpark applications from the Jupyter notebook environment by explicitly creating SparkContext.
   * This launches your Spark cluster in in-cluster client mode. The in-cluster client mode means that the submission environment is within a kubernetes cluster.
   * You can configure your Spark cluster by providing your custom spark-defaults.conf under [conf/spark/](conf/spark) directory of this chart.
   * A basic [spark-defaults.conf](conf/spark/spark-defaults.conf) is provided which specifies the docker images from SnappyData, Inc. and few other defaults.
-  * This chart uses docker images built with spark-on-k8s binaries after applying patch for [PR#456](https://github.com/apache-spark-on-k8s/spark/pull/456) as the changes for it are not yet merged in [spark-on-k8s](https://github.com/apache-spark-on-k8s/spark) project.
+  * This chart uses docker images built with Spark 2.4 binaries. 
 
 ## Installing the Chart
 1. Make sure that Helm is setup in your kubernetes environment. You may refer to these [steps](https://docs.bitnami.com/kubernetes/get-started-kubernetes/#step-4-install-helm-and-tiller).
@@ -142,7 +142,7 @@ print("Pi is roughly %f" % (4.0 * count / n))
    | Parameter               | Description                           | Default                                     |
    | ----------------------- | ------------------------------------- | ------------------------------------------- |
    | `image.repository`      |  Docker repo/name for the image       |     `SnappyDataInc/jupyter-notebook`        |
-   | `image.tag`             |  Tag for the Docker image             |     `5.2.2-spark-v2.2.0-kubernetes-0.5.1`   | 
+   | `image.tag`             |  Tag for the Docker image             |     `5.2.2-spark-v2.4-dist.2`   | 
    | `image.pullPolicy`      |  Pull policy for the image            |     `IfNotPresent`                          |
    | `jupyterService.type`   |  K8S service type for Jupyter server  |     `LoadBalancer`                          |
    | `jupyterService.jupyterPort`   |  Port for Jupyter notebook service    |     `8080`                           |

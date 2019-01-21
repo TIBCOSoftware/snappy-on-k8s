@@ -4,7 +4,7 @@
 # Refer to https://github.com/SnappyDataInc/spark-on-k8s/tree/master/docs/building-images.md#jupyter-image
 # for instructions to build the Docker image.
 # This Dockerfile should be present in the same directory where spark-on-k8s distribution
-# directory (spark-2.2.0-k8s-0.5.0-bin-2.7.3) is kept.
+# directory is kept.
 
 FROM jupyter/scipy-notebook
 
@@ -12,7 +12,7 @@ USER root
 
 # Copied from pyspark notebook- start
 # Spark dependencies
-ENV APACHE_SPARK_VERSION 2.2.0
+ENV APACHE_SPARK_VERSION 2.4.0
 ENV HADOOP_VERSION 2.7
 
 RUN apt-get -y update && \
@@ -31,14 +31,14 @@ RUN mkdir -p /opt/spark && \
     ln -sv /bin/bash /bin/sh && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd
 
-COPY spark-2.2.0-k8s-0.5.0-bin-2.7.3/jars /opt/spark/jars
-COPY spark-2.2.0-k8s-0.5.0-bin-2.7.3/bin /opt/spark/bin
-COPY spark-2.2.0-k8s-0.5.0-bin-2.7.3/sbin /opt/spark/sbin
-COPY spark-2.2.0-k8s-0.5.0-bin-2.7.3/conf /opt/spark/conf
-COPY spark-2.2.0-k8s-0.5.0-bin-2.7.3/dockerfiles/spark-base/entrypoint.sh /opt/
+COPY jars /opt/spark/jars
+COPY bin /opt/spark/bin
+COPY sbin /opt/spark/sbin
+COPY conf /opt/spark/conf
+COPY kubernetes/dockerfiles/spark/entrypoint.sh /opt/
 
-ADD spark-2.2.0-k8s-0.5.0-bin-2.7.3/examples /opt/spark/examples
-ADD spark-2.2.0-k8s-0.5.0-bin-2.7.3/python /opt/spark/python
+ADD examples /opt/spark/examples
+ADD python /opt/spark/python
 
 # Copy aws and gcp jars
 # COPY aws_gcp_jars/hadoop-aws-2.7.3.jar /opt/spark/jars
@@ -50,7 +50,7 @@ ENV SPARK_HOME /opt/spark
 ENV PYTHON_VERSION 2.7.13
 ENV PYSPARK_PYTHON python
 ENV PYSPARK_DRIVER_PYTHON python
-ENV PYTHONPATH ${SPARK_HOME}/python/:${SPARK_HOME}/python/lib/py4j-0.10.4-src.zip:${PYTHONPATH}
+ENV PYTHONPATH ${SPARK_HOME}/python/:${SPARK_HOME}/python/lib/py4j-0.10.7-src.zip:${PYTHONPATH}
 
 CMD SPARK_CLASSPATH="${SPARK_HOME}/jars/*" && \
     env | grep SPARK_JAVA_OPT_ | sed 's/[^=]*=\(.*\)/\1/g' > /tmp/java_opts.txt && \
@@ -65,7 +65,6 @@ CMD SPARK_CLASSPATH="${SPARK_HOME}/jars/*" && \
 
 # Copied from pyspark notebook- start
 # Spark config
-ENV PYTHONPATH $SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.4-src.zip
 ENV SPARK_OPTS --driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info
 # Copied from pyspark notebook- end
 

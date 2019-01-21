@@ -31,7 +31,7 @@ spec:
               containerPort: {{ .Values.jupyterService.sparkUIPort }}
               protocol: TCP
           command:
-            - "/bin/sh"
+            - "/bin/bash"
             - "-c"
             - >
               jupyter notebook --generate-config;
@@ -39,11 +39,11 @@ spec:
               if [ $size -gt 0 ]; then cp /tmp/conf/jupyter/jupyter_notebook_config.py /home/jovyan/.jupyter/jupyter_notebook_config.py; fi;
               cp /tmp/conf/spark/* /opt/spark/conf/;
               mkdir -p /home/jovyan/notebooks;
-              prefix=`date +%s%N | cut -b1-13`;
+              ip=`hostname -i`;
               echo "" >> /opt/spark/conf/spark-defaults.conf;
               echo "spark.master                                   k8s://https://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT" >> /opt/spark/conf/spark-defaults.conf;
+              echo "spark.driver.host                              $ip" >> /opt/spark/conf/spark-defaults.conf;
               echo "spark.kubernetes.driver.pod.name               $HOSTNAME" >> /opt/spark/conf/spark-defaults.conf;
-              echo "spark.kubernetes.executor.podNamePrefix        spark-$prefix" >> /opt/spark/conf/spark-defaults.conf;
               echo "spark.kubernetes.authenticate.driver.serviceAccountName {{ .Values.global.serviceAccount | default .Values.serviceAccount }}" >> /opt/spark/conf/spark-defaults.conf;
               echo "spark.ui.port                                  {{ .Values.jupyterService.sparkUIPort }}" >> /opt/spark/conf/spark-defaults.conf;
               echo "spark.kubernetes.namespace                     {{ .Release.Namespace }}" >> /opt/spark/conf/spark-defaults.conf;
