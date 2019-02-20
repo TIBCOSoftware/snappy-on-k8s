@@ -51,6 +51,9 @@ spec:
   - port: 8090
     targetPort: 8090
     name: jobserver
+  - port: 10000
+    targetPort: 10000
+    name: hive-thrift-server
   - port: 3768
     targetPort: 3768
     name: zeppelin-interpreter

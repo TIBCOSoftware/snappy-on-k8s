@@ -36,9 +36,8 @@ COPY bin /opt/spark/bin
 COPY sbin /opt/spark/sbin
 COPY conf /opt/spark/conf
 COPY kubernetes/dockerfiles/spark/entrypoint.sh /opt/
-
-ADD examples /opt/spark/examples
-ADD python /opt/spark/python
+COPY examples /opt/spark/examples
+COPY python /opt/spark/python
 
 # Copy aws and gcp jars
 # COPY aws_gcp_jars/hadoop-aws-2.7.3.jar /opt/spark/jars

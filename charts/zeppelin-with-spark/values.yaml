@@ -4,7 +4,7 @@
 
 image:
   repository: snappydatainc
-  tag: zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.1-test.1
+  tag: zeppelin:0.8.1-spark-v2.4.0
   pullPolicy: IfNotPresent
 
 zeppelinService:
@@ -19,8 +19,7 @@ serviceAccount: default
 environment:
   # Provide configuration parameters, use syntax as expected by spark-submit
   SPARK_SUBMIT_OPTIONS: >-
-     --conf spark.kubernetes.driver.docker.image=snappydatainc/spark-driver:v2.2.0-kubernetes-0.5.1
-     --conf spark.kubernetes.executor.docker.image=snappydatainc/spark-executor:v2.2.0-kubernetes-0.5.1
+     --conf spark.kubernetes.container.image=snappydatainc/spark:v2.4
      --conf spark.executor.instances=2
 #     --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile=/etc/secrets/sparkonk8s-test.json
 
@@ -29,7 +28,7 @@ sparkEventLog:
   # eventsLogDir should point to a URI of GCS bucket where history events will be dumped
   eventLogDir: "gs://spark-history-server-store/"
 
-# if mountSecrets is set to true files in 'conf/secrets' directory will be mounted
+# if mountSecrets is set to true, files in 'conf/secrets' directory will be mounted
 # on path '/etc/secrets' as secrets
 mountSecrets: false
 

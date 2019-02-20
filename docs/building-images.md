@@ -9,26 +9,19 @@ Refer to [this page](https://docs.docker.com/install) to get information about i
 
 ## Spark Images
 
-The binaries used to build the Spark images are based on the [spark-on-k8s](https://github.com/apache-spark-on-k8s/spark) project, with few additional changes.
-These have been committed into a clone of branch-2.2-kubernetes branch in above repository, and is available as a branch in SnappyData's fork of Apache Spark.
+The binaries used to build the Spark images are based on the [Apache Spark 2.4](https://github.com/apache-spark-on-k8s/spark) distribution.
+Three jars have also been added into the image:
 
-Get the latest branch:
-
-```bash
-$ git clone https://github.com/SnappyDataInc/spark.git -b snappy/branch-2.2-kubernetes
-```
-
-Go to the checkout directory and build the project using [maven](https://maven.apache.org/install.html).
-Also, package the build into a tarball, which will be needed when building the Docker images for Jupyter and Apache Zeppelin.
+Download and extract the Apache Spark 2.4 distribution:
 
 ```bash
-$ ./build/mvn -Pkubernetes -DskipTests clean package
-$ ./dev/make-distribution.sh --name 2.7.3 --pip --tgz -Phadoop-2.7 -Phive -Phive-thriftserver -Pkubernetes
+$ wget -q https://archive.apache.org/dist/spark/spark-2.4.0/spark-2.4.0-bin-hadoop2.7.tgz
+$ tar -xf spark-2.4.0-bin-hadoop2.7.tgz
 ```
 
-Now that the binaries are built, you also need to download and place following jars into the directories
-assembly/target/scala-2.11/jars and dist/jars of your checkout.
-These are needed for enabling access to Google Cloud Storage and AWS S3 buckets, which your Spark applications may need.
+Go to the directory where the tar is extracted and download below three jars into the jars/ directory.
+
+These jars are needed for enabling access to Google Cloud Storage and AWS S3 buckets, which your Spark applications may need.
 
 1. [aws-java-sdk-1.7.4.jar](http://central.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar)
 2. [hadoop-aws-2.7.3.jar](http://central.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.7.3/hadoop-aws-2.7.3.jar)
@@ -37,26 +30,24 @@ These are needed for enabling access to Google Cloud Storage and AWS S3 buckets,
 Now build and publish the Docker images to your DockerHub account. It may take several minutes depending upon your network speed.
 
 ```bash
-$ ./sbin/build-push-docker-images.sh -r <your-docker-repo-name> -t <image-tag> build
+$ ./bin/docker-image-tool.sh -r <repo> -t my-tag build
 ```
 
-Make sure you are logged in to your Docker Hub account before publishing the images:
+Make sure you are logged in to your Docker Hub account (or any other container registry you use) before publishing the images:
 
 ```bash
 $ docker login
 Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
 Username: <your-account-username>
 Password: <password>
-$ ./sbin/build-push-docker-images.sh -r <your-docker-repo-name> -t <image-tag> push
+$ ./bin/docker-image-tool.sh -r <repo> -t my-tag push
 ```
 
 ## Jupyter Image
 
-This image will contain the Spark binaries you built above apart from the dependencies needed for Jupyter Notebook server.
+This image contains the Apache Spark 2.4 binaries, in addition to the dependencies needed for Jupyter Notebook server.
 
-Extract the Spark tarball generated above into a directory where you have copied the [Dockerfile for Jupyter image](../dockerfiles/jupyter/Dockerfile) to.
-
-Make sure that the third party jars needed to access GCS and AWS S3 are copied to the jars directory of the extracted tarball.
+Copy the [Dockerfile for Jupyter image](../dockerfiles/jupyter/Dockerfile) to the above extracted Apache Spark 2.4 directory.
 
 Build and publish the Jupyter image:
 
@@ -67,18 +58,16 @@ $ docker push <your-docker-repo-name>/jupyter-notebook:<image-tag>
 
 For example:
 ```bash
-$ docker build -t snappydatainc/jupyter-notebook:5.2.2-spark-v2.2.0-kubernetes-0.5.1 -f Dockerfile .
-$ docker push snappydatainc/jupyter-notebook:5.2.2-spark-v2.2.0-kubernetes-0.5.1
+$ docker build -t snappydatainc/jupyter-notebook:5.2.2-spark-v2.4.0 -f Dockerfile .
+$ docker push snappydatainc/jupyter-notebook:5.2.2-spark-v2.4.0
 ```
 
 ## Zeppelin Image
 
-This image will contain the Spark binaries built earlier apart from the dependencies needed for launching Apache Zeppelin server.
+This image contains the Apache Spark 2.4 binaries, in addition to the dependencies needed for launching Apache Zeppelin 0.8.1 server.
 
-Extract the Spark tarball generated above into a directory where you have copied the [Dockerfile for Zeppelin image](../dockerfiles/zeppelin/Dockerfile) to.
+Copy the [Dockerfile for Zeppelin image](../dockerfiles/zeppelin/Dockerfile) to the above extracted Apache Spark 2.4 directory.
 Also, copy the script [setSparkEnvVars.sh](../dockerfiles/zeppelin/setSparkEnvVars.sh) to the same location.
-
-Make sure that the third party jars needed to access GCS and AWS S3 are copied to the jars directory of the extracted tarball.
 
 Build and publish the Zeppelin image.
 
@@ -89,8 +78,8 @@ $ docker push <your-docker-repo-name>/zeppelin:<image-tag>
 
 For example:
 ```bash
-$ docker build -t snappydatainc/zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.1 -f Dockerfile .
-$ docker push snappydatainc/zeppelin:0.7.3-spark-v2.2.0-kubernetes-0.5.1
+$ docker build -t snappydatainc/zeppelin:0.8.1-spark-v2.4.0 -f Dockerfile .
+$ docker push snappydatainc/zeppelin:0.8.1-spark-v2.4.0
 ```
 
 ## SnappyData Image

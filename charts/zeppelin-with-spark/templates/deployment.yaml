@@ -57,8 +57,10 @@ spec:
               SPARK_SECRETS_CONFIG=" --conf spark.kubernetes.driver.secrets.{{ .Release.Name }}-zp-secrets=/etc/secrets \
                 --conf spark.kubernetes.executor.secrets.{{ .Release.Name }}-zp-secrets=/etc/secrets"
               {{- end }}
+              export HOSTNAME_IP=`hostname -I`;
               export SPARK_SUBMIT_OPTIONS="$SPARK_SUBMIT_OPTIONS $SPARK_EVENT_LOG_CONFIG $SPARK_SECRETS_CONFIG \
-               --conf spark.kubernetes.namespace={{ .Release.Namespace }}
+               --conf spark.kubernetes.namespace={{ .Release.Namespace }} \
+               --conf spark.driver.host=$HOSTNAME_IP \
                --conf spark.kubernetes.driver.pod.name=$HOSTNAME \
                --conf spark.kubernetes.authenticate.driver.serviceAccountName={{ .Values.global.serviceAccount | default .Values.serviceAccount }} \
                --conf spark.ui.port={{ .Values.zeppelinService.sparkUIPort }}";

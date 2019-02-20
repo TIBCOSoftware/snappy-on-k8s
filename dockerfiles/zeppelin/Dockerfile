@@ -23,7 +23,7 @@ FROM ubuntu:16.04
 MAINTAINER Apache Software Foundation <dev@zeppelin.apache.org>
 
 # `Z_VERSION` will be updated by `dev/change_zeppelin_version.sh`
-ENV Z_VERSION="0.7.3"
+ENV Z_VERSION="0.8.1"
 ENV LOG_TAG="[ZEPPELIN_${Z_VERSION}]:" \
     Z_HOME="/zeppelin" \
     LANG=en_US.UTF-8 \
@@ -92,26 +92,26 @@ RUN echo "$LOG_TAG Install R related packages" && \
     R -e "install.packages('Rcpp', repos='http://cran.us.r-project.org')" && \
     Rscript -e "library('devtools'); library('Rcpp'); install_github('ramnathv/rCharts')"
 
-ENV SEARCH_STRING="<name>zeppelin.interpreters<\/name>"
-ENV INSERT_STRING="org.apache.zeppelin.interpreter.SnappyDataZeppelinInterpreter,org.apache.zeppelin.interpreter.SnappyDataSqlZeppelinInterpreter,"
-ENV LEAD_HOST="localhost"
-ENV LEAD_PORT="3768"
+#ENV SEARCH_STRING="<name>zeppelin.interpreters<\/name>"
+#ENV INSERT_STRING="org.apache.zeppelin.interpreter.SnappyDataZeppelinInterpreter,org.apache.zeppelin.interpreter.SnappyDataSqlZeppelinInterpreter,"
+#ENV LEAD_HOST="localhost"
+#ENV LEAD_PORT="3768"
 
 RUN echo "$LOG_TAG Download Zeppelin binary and install interpreter for snappydata" && \
-    wget -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
+    wget -q -O /tmp/zeppelin-${Z_VERSION}-bin-all.tgz http://archive.apache.org/dist/zeppelin/zeppelin-${Z_VERSION}/zeppelin-${Z_VERSION}-bin-all.tgz && \
     tar -zxvf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
     rm -rf /tmp/zeppelin-${Z_VERSION}-bin-all.tgz && \
-    mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME} && \
-    cp ${Z_HOME}/conf/zeppelin-site.xml.template ${Z_HOME}/conf/zeppelin-site.xml && \
-    sed -i "/${SEARCH_STRING}/{n;s/<value>/<value>${INSERT_STRING}/}" ${Z_HOME}/conf/zeppelin-site.xml && \
-    ${Z_HOME}/bin/install-interpreter.sh --name snappydata --artifact io.snappydata:snappydata-zeppelin:0.7.3 && \
-    ${Z_HOME}/bin/zeppelin-daemon.sh start && \
-    while ! test -f  ${Z_HOME}/conf/interpreter.json; do sleep 3s; done && \
-    ${Z_HOME}/bin/zeppelin-daemon.sh stop && \
-    sed -i "/group\": \"snappydata\"/,/isExistingProcess\": false/{s/port\": -1/port\": ${LEAD_PORT}/}" ${Z_HOME}/conf/interpreter.json && \
-    sed -i "/group\": \"snappydata\"/,/isExistingProcess\": false/{s/isExistingProcess\": false/isExistingProcess\": snappydatainc_marker/}" ${Z_HOME}/conf/interpreter.json && \
-    sed -i "/snappydatainc_marker/a \"host\": \"${LEAD_HOST}\"," ${Z_HOME}/conf/interpreter.json && \
-    sed -i "s/snappydatainc_marker/true/" ${Z_HOME}/conf/interpreter.json
+    mv /zeppelin-${Z_VERSION}-bin-all ${Z_HOME}
+#    cp ${Z_HOME}/conf/zeppelin-site.xml.template ${Z_HOME}/conf/zeppelin-site.xml && \
+#    sed -i "/${SEARCH_STRING}/{n;s/<value>/<value>${INSERT_STRING}/}" ${Z_HOME}/conf/zeppelin-site.xml && \
+#    ${Z_HOME}/bin/install-interpreter.sh --name snappydata --artifact io.snappydata:snappydata-zeppelin:0.7.3.4 && \
+#    ${Z_HOME}/bin/zeppelin-daemon.sh start && \
+#    while ! test -f  ${Z_HOME}/conf/interpreter.json; do sleep 3s; done && \
+#    ${Z_HOME}/bin/zeppelin-daemon.sh stop && \
+#    sed -i "/group\": \"snappydata\"/,/isExistingProcess\": false/{s/port\": -1/port\": ${LEAD_PORT}/}" ${Z_HOME}/conf/interpreter.json && \
+#    sed -i "/group\": \"snappydata\"/,/isExistingProcess\": false/{s/isExistingProcess\": false/isExistingProcess\": snappydatainc_marker/}" ${Z_HOME}/conf/interpreter.json && \
+#    sed -i "/snappydatainc_marker/a \"host\": \"${LEAD_HOST}\"," ${Z_HOME}/conf/interpreter.json && \
+#    sed -i "s/snappydatainc_marker/true/" ${Z_HOME}/conf/interpreter.json
 
 
 RUN echo "$LOG_TAG Cleanup" && \
@@ -129,22 +129,17 @@ RUN mkdir -p /opt/spark && \
     ln -sv /bin/bash /bin/sh && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd
 
-COPY spark-2.2.0-k8s-0.5.0-bin-2.7.3/jars /opt/spark/jars
-COPY spark-2.2.0-k8s-0.5.0-bin-2.7.3/bin /opt/spark/bin
-COPY spark-2.2.0-k8s-0.5.0-bin-2.7.3/sbin /opt/spark/sbin
-COPY spark-2.2.0-k8s-0.5.0-bin-2.7.3/conf /opt/spark/conf
-COPY spark-2.2.0-k8s-0.5.0-bin-2.7.3/dockerfiles/spark-base/entrypoint.sh /opt/
+COPY jars /opt/spark/jars
+COPY bin /opt/spark/bin
+COPY sbin /opt/spark/sbin
+COPY conf /opt/spark/conf
+COPY kubernetes/dockerfiles/spark/entrypoint.sh /opt/
+COPY examples /opt/spark/examples
 
-# Copy aws and gcp jars
-# COPY aws_gcp_jars/hadoop-aws-2.6.0.jar /opt/spark/jars
-# COPY aws_gcp_jars/aws-java-sdk-1.7.4.jar /opt/spark/jars
-# COPY aws_gcp_jars/gcs-connector-latest-hadoop2.jar /opt/spark/jars
-
+# Why not use ENV?
 COPY setSparkEnvVars.sh /opt/
 
 ENV SPARK_HOME /opt/spark
-
-COPY spark-2.2.0-k8s-0.5.0-bin-2.7.3/examples /opt/spark/examples
 
 CMD SPARK_CLASSPATH="${SPARK_HOME}/jars/*" && \
     env | grep SPARK_JAVA_OPT_ | sed 's/[^=]*=\(.*\)/\1/g' > /tmp/java_opts.txt && \
@@ -156,12 +151,7 @@ CMD SPARK_CLASSPATH="${SPARK_HOME}/jars/*" && \
     if ! [ -z ${SPARK_MOUNTED_FILES_FROM_SECRET_DIR} ]; then cp -R "$SPARK_MOUNTED_FILES_FROM_SECRET_DIR/." .; fi && \
     ${JAVA_HOME}/bin/java "${SPARK_DRIVER_JAVA_OPTS[@]}" -cp "$SPARK_CLASSPATH" -Xms$SPARK_DRIVER_MEMORY -Xmx$SPARK_DRIVER_MEMORY -Dspark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS $SPARK_DRIVER_CLASS $SPARK_DRIVER_ARGS
 
-#ENV MASTER k8s://$KUBERNETES_SERVICE_HOST:$KUBERNETES_SERVICE_PORT
-#ENV SPARK_SUBMIT_OPTIONS "--kubernetes-namespace default --conf spark.kubernetes.driver.pod.name=$HOSTNAME --conf spark.kubernetes.driver.docker.image=shirishd/spark-driver:v2.2.0 --conf spark.kubernetes.executor.docker.image=shirishd/spark-executor:v2.2.0"
-
-#CMD ["/opt/setSparkEnvVars.sh"]
 CMD ["bin/bash", "-c", "source", "/opt/setSparkEnvVars.sh"]
-#RUN /bin/bash -c "source /opt/setSparkEnvVars.sh"
 ####### End changes for Spark-on-k8s ##########################
 
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
