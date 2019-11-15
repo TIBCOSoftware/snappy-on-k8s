@@ -25,6 +25,10 @@ spec:
         release: {{ .Release.Name }}
     spec:
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 10 }}
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecrets }}
+      {{- end }}
       containers:
       - name: "{{ .Release.Name }}-locator"
         image: "{{ .Values.image }}:{{ .Values.imageTag }}"
