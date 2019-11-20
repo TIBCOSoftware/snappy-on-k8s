@@ -4,6 +4,9 @@
 image: snappydatainc/snappydata
 imageTag: 1.0.2.1
 imagePullPolicy: IfNotPresent
+# Use "imagePullSecrets" to specify the secret name to be used while pulling image from a private registry
+# Replace "secretname" with the actual name of the secret
+#imagePullSecrets: secretname
 
 locators:
   ## config options for locators
