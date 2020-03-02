@@ -1,0 +1,7 @@
+version: "2"
+domain: cloud.tibco.com
+repo: snappydata-operator
+resources:
+- group: snappydata
+  version: v1beta1
+  kind: SnappyDataCluster

@@ -1,0 +1,16 @@
+apiVersion: snappydata.cloud.tibco.com/v1beta1
+# SnappyDataCluster is a Kubernetes  custom resource
+kind: SnappyDataCluster
+metadata:
+  # name of the snappy cluster
+  name: snappydata-dev-cluster
+spec:
+  # size of the cluster
+  # "Custom" indicates user specified configuration instead inbuilt T-Shirt sized clusters
+  size: Small
+  # suspend the cluster if idle for specified time
+  # 0 or negative value indicates autosuspend is off
+  suspendafter: 30m
+  # Docker image co-ordinates
+  image: snappydatainc/snappydata-ent:1.1.1-dc2
+  imagePullPolicy: IfNotPresent
