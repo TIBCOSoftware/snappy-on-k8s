@@ -49,9 +49,13 @@ func (r *SnappyDataClusterReconciler) createServiceIfNotExists(snappy *snappydat
 	found := &corev1.Service{}
 	err := r.Get(context.TODO(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
-		l.Info("Creating service", "service", *service)
+		l.Info("Creating service", "service", service.Namespace+"."+service.Name)
+		r.Recorder.Eventf(snappy, corev1.EventTypeNormal, "Info", "Creating service %s in namespace %s", service.Name, service.Namespace)
 		if err := r.Create(ctx, service); err != nil {
 			l.Error(err, "unable to create service", "service", *service)
+			r.Recorder.Eventf(snappy, corev1.EventTypeWarning, "Warning",
+				"Unable to create service %s in namespace %s due to error: %s",
+				service.Name, service.Namespace, err.Error())
 			return ctrl.Result{}, err
 		}
 		return ctrl.Result{}, err
@@ -61,7 +65,8 @@ func (r *SnappyDataClusterReconciler) createServiceIfNotExists(snappy *snappydat
 
 	if !reflect.DeepEqual(service.Spec, found.Spec) {
 		found.Spec = service.Spec
-		l.Info("Updating service", "service", *service)
+		l.Info("Updating service", "service", service.Namespace+"."+service.Name)
+		r.Recorder.Eventf(snappy, corev1.EventTypeNormal, "Info", "Updating service %s in namespace %s", service.Name, service.Namespace)
 		err = r.Update(context.TODO(), found)
 		if err != nil {
 			return ctrl.Result{}, err

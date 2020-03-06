@@ -50,9 +50,13 @@ func (r *SnappyDataClusterReconciler) createStatefulsetIfNotExists(snappy *snapp
 	found := &appsv1.StatefulSet{}
 	err := r.Get(context.TODO(), types.NamespacedName{Name: statefulset.Name, Namespace: statefulset.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
-		l.Info("Creating statefulset", "statefulset", *statefulset)
+		l.Info("Creating statefulset", "statefulset", statefulset.Name+"."+statefulset.Namespace)
+		r.Recorder.Eventf(snappy, corev1.EventTypeNormal, "Info", "Creating statefulset %s in namespace %s", statefulset.Name, statefulset.Namespace)
 		if err := r.Create(ctx, statefulset); err != nil {
 			l.Error(err, "unable to create statefulset", "statefulset", *statefulset)
+			r.Recorder.Eventf(snappy, corev1.EventTypeWarning, "Warning",
+				"Unable to create statefulset %s in namespace %s due to error: %s",
+				statefulset.Name, statefulset.Namespace, err.Error())
 			return ctrl.Result{}, err
 		}
 		return reconcile.Result{}, err
@@ -62,7 +66,8 @@ func (r *SnappyDataClusterReconciler) createStatefulsetIfNotExists(snappy *snapp
 
 	if !reflect.DeepEqual(statefulset.Spec, found.Spec) {
 		found.Spec = statefulset.Spec
-		l.Info("Updating statefulset", "statefulset", *statefulset)
+		l.Info("Updating statefulset", "statefulset", statefulset.Name+"."+statefulset.Namespace)
+		r.Recorder.Eventf(snappy, corev1.EventTypeNormal, "Info", "Updating statefulset %s in namespace %s", statefulset.Name, statefulset.Namespace)
 		err = r.Update(context.TODO(), found)
 		if err != nil {
 			return reconcile.Result{}, err
@@ -210,6 +215,7 @@ func (r *SnappyDataClusterReconciler) startServerStatefulset(snappy *snappydatav
 				"/bin/sh", "-c", "/opt/snappydata/sbin/snappy-servers.sh status | grep -e running -e waiting"}}},
 		InitialDelaySeconds: int32(360),
 	}
+
 	// TODO: we can just check whether service is ready by listing the services here instead of code like this
 	waitforservicearg := "--get-ip " + snappy.ObjectMeta.Name + "-server-public --wait-for " + snappy.ObjectMeta.Name + "-locator-headless 10334"
 	r.Log.Info("waitforservicearg is ", "waitforservicearg", waitforservicearg)

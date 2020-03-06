@@ -18,6 +18,8 @@ package controllers
 import (
 	"context"
 
+	"k8s.io/client-go/tools/record"
+
 	"github.com/go-logr/logr"
 	"github.com/prometheus/common/log"
 
@@ -27,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 
+	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -36,8 +39,9 @@ import (
 // SnappyDataClusterReconciler reconciles a SnappyDataCluster object
 type SnappyDataClusterReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log      logr.Logger
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 // name of our custom finalizer
@@ -78,33 +82,6 @@ func (r *SnappyDataClusterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 		}
 		return ctrl.Result{}, nil
 	}
-
-	// // start the required headless services
-	// l.Info("Starting headless services")
-	// if result, err := r.startHeadLessServices(&snappy); err != nil {
-	// 	return result, err
-	// }
-
-	// // start the required LB services
-	// l.Info("Starting load balancer services")
-	// if result, err := r.startLBServices(&snappy); err != nil {
-	// 	return result, err
-	// }
-
-	// l.Info("Starting locator statefulset")
-	// if result, err := r.startLocatorStatefulset(&snappy); err != nil {
-	// 	return result, err
-	// }
-
-	// l.Info("Starting server statefulset")
-	// if result, err := r.startServerStatefulset(&snappy); err != nil {
-	// 	return result, err
-	// }
-
-	// l.Info("Starting lead statefulset")
-	// if result, err := r.startLeaderStatefulset(&snappy); err != nil {
-	// 	return result, err
-	// }
 
 	if result, err := r.reconcileSnappyObjects(&snappy); err != nil {
 		return result, err
@@ -168,15 +145,37 @@ func (r *SnappyDataClusterReconciler) handleDelete(snappy *snappydatav1beta1.Sna
 	ctx := context.Background()
 	l := r.Log.WithValues("snappydatacluster", snappy.Namespace)
 	// TODO: Add the deletion logic here
+	// First stop locators, then servers
 	l.Info("Inside handleDelete...cluster is being deleted")
+	// Delete leader statefulset
 	leader := &appsv1.StatefulSet{}
-	err := r.Get(context.TODO(), types.NamespacedName{Name: snappy.ObjectMeta.Name + "-lead", Namespace: snappy.Namespace}, leader)
+	leadername := types.NamespacedName{Name: snappy.ObjectMeta.Name + "-lead", Namespace: snappy.Namespace}
+	err := r.Get(context.TODO(), leadername, leader)
 	if err != nil && errors.IsNotFound(err) {
+		l.Info("Leader statefulset not found", "leader", leadername)
+		err = nil
 	} else if err == nil {
-		l.Info("Deleting leader")
+		l.Info("Deleting leader statefulset")
+		r.Recorder.Eventf(snappy, corev1.EventTypeNormal, "Info", "Deleting lead statefulset %s", leadername)
 		deletepolicy := metav1.DeletePropagationForeground
 		err = r.Delete(ctx, leader, &client.DeleteOptions{PropagationPolicy: &deletepolicy})
-		l.Info("Deleted leader")
+		l.Info("Deleted leader statefulset")
+	}
+
+	// Delete server statefulset
+	server := &appsv1.StatefulSet{}
+	servername := types.NamespacedName{Name: snappy.ObjectMeta.Name + "-server", Namespace: snappy.Namespace}
+	err = r.Get(context.TODO(), servername, server)
+	if err != nil && errors.IsNotFound(err) {
+		l.Info("Server statefulset not found", "server", servername)
+		err = nil
+	} else if err == nil {
+		l.Info("Deleting server statefulset")
+		r.Recorder.Eventf(snappy, corev1.EventTypeNormal, "Info", "Deleting server statefulset %s", servername)
+		deletepolicy := metav1.DeletePropagationForeground
+		err = r.Delete(ctx, server, &client.DeleteOptions{PropagationPolicy: &deletepolicy})
+		l.Info("Deleted server statefulset")
+		// return ctrl.Result{Requeue: true}, err
 	}
 
 	// remove our finalizer from the list and update it.
@@ -184,7 +183,7 @@ func (r *SnappyDataClusterReconciler) handleDelete(snappy *snappydatav1beta1.Sna
 	if err := r.Update(context.Background(), snappy); err != nil {
 		return ctrl.Result{}, err
 	}
-	return ctrl.Result{}, nil
+	return ctrl.Result{}, err
 }
 
 // Helper functions to check and remove string from a slice of strings.
