@@ -17,6 +17,7 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	"k8s.io/client-go/tools/record"
 
@@ -154,7 +155,7 @@ func (r *SnappyDataClusterReconciler) handleDelete(snappy *snappydatav1beta1.Sna
 	if err != nil && errors.IsNotFound(err) {
 		l.Info("Leader statefulset not found", "leader", leadername)
 		err = nil
-	} else if err == nil {
+	} else if err == nil && leader.ObjectMeta.DeletionTimestamp.IsZero() { //checks whether object already marked for deletion
 		l.Info("Deleting leader statefulset")
 		r.Recorder.Eventf(snappy, corev1.EventTypeNormal, "Info", "Deleting lead statefulset %s", leadername)
 		deletepolicy := metav1.DeletePropagationForeground
@@ -169,13 +170,14 @@ func (r *SnappyDataClusterReconciler) handleDelete(snappy *snappydatav1beta1.Sna
 	if err != nil && errors.IsNotFound(err) {
 		l.Info("Server statefulset not found", "server", servername)
 		err = nil
-	} else if err == nil {
+	} else if err == nil && server.ObjectMeta.DeletionTimestamp.IsZero() { //checks whether object already marked for deletion
 		l.Info("Deleting server statefulset")
 		r.Recorder.Eventf(snappy, corev1.EventTypeNormal, "Info", "Deleting server statefulset %s", servername)
 		deletepolicy := metav1.DeletePropagationForeground
 		err = r.Delete(ctx, server, &client.DeleteOptions{PropagationPolicy: &deletepolicy})
 		l.Info("Deleted server statefulset")
-		// return ctrl.Result{Requeue: true}, err
+		// Requeue after 10 seconds, this gives 10 seconds to delete leads and servers
+		return ctrl.Result{RequeueAfter: 10 * time.Second}, err
 	}
 
 	// remove our finalizer from the list and update it.
